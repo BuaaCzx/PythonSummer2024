@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Python代码重复检查工具</title>
+    <link rel="stylesheet" href="../static/offcanvas.css">
+    <script type="text/javascript" src="../static/offcanvas.js"></script>
+</head>
+<body>
+<div class="container">
+
+                                    <!--    这是导航栏-->
+    <nav>
+        <ul class="mcd-menu">
+            <li>
+                <a href="javascript:void(0)" onclick="showSection('home')" class="active">
+                    <i class="fa fa-home"></i>
+                    主页
+                </a>
+            </li>
+            <li>
+                <a href="javascript:void(0)" onclick="showSection('code-check')">
+                    <i class="fa fa-edit"></i>
+                    代码重复性检测
+                </a>
+            </li>
+            <li>
+                <a href="javascript:void(0)" onclick="showSection('history')">
+                    <i class="fa fa-edit"></i>
+                    历史记录
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+
+
+    <div class="main-content">
+<!--                            这是时间显示-->
+        <div class="header">
+            <div id="current-time">当前系统时间:</div>
+            <div id="login-time">登录时间:</div>
+        </div>
+<!--                                这是主页-->
+        <div class="section active" id="home">
+            <h2>主页</h2>
+            <!-- 主页内容可以在这里添加 -->
+        </div>
+
+<!--                        这是第二个板块-->
+        <div class="section" id="code-check">
+            <h2>代码重复性检测</h2>
+            <form>
+                <input type="file" accept=".py" multiple required>
+                <button type="submit">上传并检查</button>
+            </form>
+            <div class="results">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>文件名</th>
+                        <th>相似度</th>
+                        <th>详细结果</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>file1.py</td>
+                        <td>85%</td>
+                        <td><a href="#">查看详情</a></td>
+                    </tr>
+                    <tr>
+                        <td>file2.py</td>
+                        <td>70%</td>
+                        <td><a href="#">查看详情</a></td>
+                    </tr>
+                    <!-- 可以根据实际结果动态添加更多行 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+
+<!--        这是第三个板块-->
+        <div class="section" id="history">
+            <h2>历史记录</h2>
+            <form>
+                <button type="button">查看历史记录</button>
+            </form>
+            <div class="results">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>日期</th>
+                        <th>文件名</th>
+                        <th>相似度</th>
+                        <th>详细结果</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>2024-07-01</td>
+                        <td>file1.py</td>
+                        <td>85%</td>
+                        <td><a href="#">查看详情</a></td>
+                    </tr>
+                    <tr>
+                        <td>2024-07-02</td>
+                        <td>file2.py</td>
+                        <td>70%</td>
+                        <td><a href="#">查看详情</a></td>
+                    </tr>
+                    <!-- 可以根据实际结果动态添加更多行 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+<!--        可以添加别的板块-->
+    </div>
+</div>
+
+
+</body>
+</html>
