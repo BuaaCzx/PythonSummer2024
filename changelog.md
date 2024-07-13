@@ -10,3 +10,4 @@
 | 7.13 16:01  | UUQ    | README 前端需求 & **新增接口文档**                           |
 | 7.13 21:53  | LPR    | 绘制了一个登陆后的主页、封装了侧边栏的css以及时间和内容展示的js，使用方法可以见menu.html（注：需要修改导入的offcanvas的地址） |
 | 7.13 23:48  | LPR    | 修改主页，统一为bootstrap和vue，弃用原生js                   |
+| 7.14 0:18   | UUQ    | 将sidebar打包成为vue组件，增加了history页面，**需要/history接口** |
