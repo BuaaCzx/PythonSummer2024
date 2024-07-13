@@ -46,7 +46,7 @@
             max-height: 80vh;
             padding: 10px;
             box-sizing: border-box; /* 包含内边距在内的宽度计算 */
-            background-color: 'linear-gradient(135deg, #0ebeff, #27bbe9, #41b8d4, #5ab5be, #74b2a9, #8daf93, #a7ac7e, #c0a968, #daa653, #f3a33d)'; /* 设置为浅粉色背景 */
+            /*background-color: linear-gradient(135deg, #0ebeff, #27bbe9, #41b8d4, #5ab5be, #74b2a9, #8daf93, #a7ac7e, #c0a968, #daa653, #f3a33d); !* 设置为浅粉色背景 *!*/
             border-radius: 5px;
             width: 60%; /* 左右侧固定宽度比例 */
         }
@@ -120,7 +120,7 @@
 <div class="navbar">
     <h1>代码上传和显示示例</h1>
     <button class="file-upload-button" onclick="document.getElementById('fileInput').click();">选择文件</button>
-    <input type="file" id="fileInput" accept=".txt,.py,.js,.html,.css" multiple hidden>
+    <input type="file" id="fileInput" accept=".txt,.py,.js,.html,.css,.java" multiple hidden>
 </div>
 
 <div class="container">
@@ -136,6 +136,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.25.0/prism.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.25.0/components/prism-python.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.25.0/components/prism-javascript.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.25.0/components/prism-java.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.25.0/components/prism-markup.min.js"></script>
 <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -147,6 +148,9 @@
             const leftContainer = document.getElementById('leftContainer');
             const buttonsContainer = document.getElementById('buttonsContainer');
             const rightContainer = document.getElementById('rightContainer');
+            if (files.length === 0) {
+                return;
+            }
             leftContainer.innerHTML = ''; // 清空左侧内容
             buttonsContainer.innerHTML = ''; // 清空按钮区域内容
             rightContainer.innerHTML = ''; // 清空右侧内容
@@ -237,6 +241,8 @@
                     return 'python';
                 case 'js':
                     return 'javascript';
+                case 'java':
+                    return 'java';
                 case 'html':
                     return 'markup';
                 case 'css':
