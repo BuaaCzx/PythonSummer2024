@@ -7,3 +7,4 @@
 | 7.13  13:35 | UUQ    | 新增changelog文件                                            |
 | 7.13  14:25 | LPR    | 增加static/templates目录，并push一个test.html，支持多个代码文件传入（第一个文件为std）、切换功能。还没支持相似代码高亮功能； 14:40 fix by UUQ |
 | 7.13 15:18  | CZX    | README 新增需求                                              |
+| 7.13 16:01  | UUQ    | README 前端需求 & **新增接口文档**                           |
