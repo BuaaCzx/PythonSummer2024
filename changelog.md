@@ -8,3 +8,4 @@
 | 7.13  14:25 | LPR    | 增加static/templates目录，并push一个test.html，支持多个代码文件传入（第一个文件为std）、切换功能。还没支持相似代码高亮功能； 14:40 fix by UUQ |
 | 7.13 15:18  | CZX    | README 新增需求                                              |
 | 7.13 16:01  | UUQ    | README 前端需求 & **新增接口文档**                           |
+| 7.13 21:53  | LPR    | 绘制了一个登陆后的主页、封装了侧边栏的css以及时间和内容展示的js，使用方法可以见menu.html（注：需要修改导入的offcanvas的地址） |
