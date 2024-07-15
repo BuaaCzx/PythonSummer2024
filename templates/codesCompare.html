@@ -1,0 +1,184 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>代码重复检测</title>
+    <script type="importmap">
+        {
+            "imports": {
+                "vue": "https://unpkg.com/vue@3.4.29/dist/vue.esm-browser.js",
+                "axios": "https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js"
+            },
+            "scopes": {}
+        }
+    </script>
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.2.3/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.2.3/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.3/dist/jquery.min.js"
+            integrity="sha256-pvPw+upLPUjgMXY0G+8O0xUf+/Im1MZjXxxgOcBQBXU=" crossorigin="anonymous"></script>
+    <script src="../static/js/echarts.min.js"></script>
+    <!-- Prism.js -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.25.0/themes/prism-okaidia.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.25.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.25.0/components/prism-python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.25.0/components/prism-javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.25.0/components/prism-markup.min.js"></script>
+</head>
+<body>
+<div id="app" class="container-fluid"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.2.2/echarts.min.js"></script>
+<script type="module">
+    import { createApp } from 'vue';
+    import sideBar from "../static/js/sideBar.js";
+
+    const highlightDirective = {
+            mounted(el) {
+                Prism.highlightElement(el);
+            },
+            updated(el) {
+                Prism.highlightElement(el);
+            }
+    };
+
+
+    const app = createApp({
+        components: {
+            sideBar
+        },
+        directives: {
+            highlight: highlightDirective
+        },
+        data() {
+            return {
+                now: "代码重复检测",
+                uploadedFiles: [],
+                fileContents: [],
+                selectedFileIndex: null,
+                standardFileIndex: null,
+            };
+        },
+        methods: {
+            handleFileChange(event) {
+                const files = event.target.files;
+                if (files && files.length > 0) {
+                    this.uploadedFiles = Array.from(files);
+                    this.readFileContents();
+                    this.updateChart(files); // Call updateChart after files are uploaded
+                }
+            },
+            readFileContents() {
+                this.fileContents = [];
+                this.uploadedFiles.forEach((file, index) => {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        this.fileContents.push(event.target.result);
+                        if (index === 0) {
+                            this.standardFileIndex = 0;
+                        }
+                    };
+                    reader.readAsText(file);
+                });
+            },
+            downloadFile(fileIndex) {
+                const file = this.uploadedFiles[fileIndex];
+                const blob = new Blob([this.fileContents[fileIndex]], { type: "text/plain" });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.style.display = "none";
+                a.href = url;
+                a.download = file.name;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            },
+            updateChart(files) {
+                var fileNames = Array.from(files).slice(1).map(file => file.name);
+                var firstFileName = files[0].name;
+
+                var myChart = echarts.init(document.getElementById('chart1'));
+
+                var option = {
+                    title: {
+                        text: `Standar: ${firstFileName}`,
+                    },
+                    tooltip: {},
+                    xAxis: {
+                        data: fileNames
+                    },
+                    yAxis: {},
+                                        //data接口,传入list就行，希望是没有百分号的float
+                    series: [{
+                        name: 'Percentage',
+                        type: 'bar',
+                        data: [81,32,15,4]
+                    }]
+                };
+
+                myChart.setOption(option);
+            },
+        },
+        mounted() {
+            Prism.highlightAll();
+        },
+        watch: {
+            selectedFileIndex(newValue) {
+                if (newValue !== null && newValue !== this.standardFileIndex) {
+                    this.standardFileIndex = 0; // Reset standard file index when selecting other files
+                }
+            }
+        },
+        template: `
+            <div class="d-flex flex-row">
+                <!-- 左侧 sidebar -->
+                <side-bar :now="now"></side-bar>
+
+                <!-- 右侧内容 -->
+                <div style="flex-grow: 1; display: flex; flex-direction: column; padding: 20px;">
+                    <div class="navbar d-flex justify-content-between align-items-center">
+                        <h1 style="margin-bottom: 0;">代码上传和显示示例</h1>
+                        <button type="button" class="btn btn-dark" onclick="document.getElementById('fileInput').click();">上传文件</button>
+                        <input type="file" id="fileInput" accept=".txt,.py,.js,.html,.css" multiple hidden ref="fileInput" @change="handleFileChange">
+                    </div>
+                    <hr>
+
+                    <!-- 图表区域 -->
+                    <div id="chart1" style="width: 100%; height: 400px; margin-top: 20px;"></div>
+
+                    <!-- 主显示区域 -->
+                    <div class="d-flex flex-row flex-grow-1">
+                        <!-- 右侧显示区域 -->
+                        <div style="flex: 1; padding-right: 10px; overflow-x: auto; border-bottom: 1px solid #ccc;">
+                            <div v-if="uploadedFiles.length > 0 && standardFileIndex !== null">
+                                <h3>Standard: {{ uploadedFiles[standardFileIndex].name }}</h3>
+                                <pre class="language-python" style="max-height: 400px; overflow-x: auto; overflow-y: auto; white-space: pre-wrap;" v-highlight><code>{{ fileContents[standardFileIndex] }}</code></pre>
+                                <button type="button" class="btn btn-primary" @click="downloadFile(standardFileIndex)">下载文件</button>
+                            </div>
+                        </div>
+
+                        <!-- 下拉选择和显示其他文件 -->
+                        <div style="flex: 1; padding-left: 10px; overflow-x: auto; border-bottom: 1px solid #ccc;">
+                            <div v-if="uploadedFiles.length > 1">
+                                <div v-if="selectedFileIndex !== null && selectedFileIndex !== standardFileIndex">
+                                    <h3>{{ uploadedFiles[selectedFileIndex].name }}</h3>
+                                    <pre class="language-python" style="max-height: 400px; overflow-x: auto; overflow-y: auto; white-space: pre-wrap;"><code>{{ fileContents[selectedFileIndex] }}</code></pre>
+                                    <button type="button" class="btn btn-primary" @click="downloadFile(selectedFileIndex)">下载文件</button>
+                                </div>
+                                <h5 style="margin-top: 20px;">选择其他文件：</h5>
+                                <select v-model="selectedFileIndex" class="form-select mt-3">
+                                    <option v-for="(file, index) in uploadedFiles.slice(1)" :key="index + 1" :value="index + 1">{{ file.name }}</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `,
+    });
+
+    app.mount("#app");
+</script>
+
+</body>
+</html>

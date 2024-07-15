@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>历史记录</title>
     <script type="importmap">
         {
@@ -73,22 +74,22 @@
             });
         },
         template: `
-<div class='row'>
-    <side-bar :now='now'></side-bar>
-    <div style="width:80vw;">
-        <br>
-        <h1>历史记录</h1>
-        <ol v-if='isLoaded' class='list-group list-group-numbered'>
-            <li v-for='item in historyData' class='list-group-item d-flex justify-content-between align-items-start'>
-                <div class='ms-2 me-auto'>
-                    <div class='fw-bold'><a :href="historyRoute+item.number.toString()">bold标题文字 {{item.title}}</a></div>
-                    底部解释说明文字 {{item.content}}
-                </div>
-                <span class='badge bg-primary rounded-pill'>悬浮信息 {{item.grade}}</span>
-            </li>
-        </ol>
-    </div>
-</div>
+        <div class='d-flex flex-row'>
+            <side-bar :now='now'></side-bar>
+            <div style="flex-grow: 1; padding: 20px;">
+                <br>
+                <h1>历史记录</h1>
+                <ol v-if='isLoaded' class='list-group list-group-numbered'>
+                    <li v-for='item in historyData' class='list-group-item d-flex justify-content-between align-items-start'>
+                        <div class='ms-2 me-auto'>
+                            <div class='fw-bold'><a :href="historyRoute+item.number.toString()">bold标题文字 {{item.title}}</a></div>
+                            底部解释说明文字 {{item.content}}
+                        </div>
+                        <span class='badge bg-primary rounded-pill'>悬浮信息 {{item.grade}}</span>
+                    </li>
+                </ol>
+            </div>
+        </div>
         `,
     });
     app.mount("#app");
