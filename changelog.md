@@ -14,4 +14,7 @@
 | 7.14 20:55  | WDL    | 初始化Django项目，增加.gitignore文件，链接template/menu.html至主页 |
 | 7.15 12:42  | UUQ    | 修复了history页面CSS样式的bug（单击左侧menu会使得页面布局改变），初步完成logout功能 |
 | 7.15 15:06  | LPR    | 增加代码上传界面codesCompare.html支持条形图显示、代码下载、standard代码高亮**（其它代码高亮会有bug，这个需要进一步排查）**，对sidebar的显示进行调整（头像放在上面）。**需要后端传入diff列表** |
+| 7.15 18:10  | LPR    | 修改了sidebar样式                                            |
+
+
 
