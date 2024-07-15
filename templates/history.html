@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>历史记录</title>
     <script type="importmap">
         {
@@ -75,7 +76,7 @@
         template: `
 <div class='row'>
     <side-bar :now='now'></side-bar>
-    <div style="width:80vw;">
+    <div class='col'>
         <br>
         <h1>历史记录</h1>
         <ol v-if='isLoaded' class='list-group list-group-numbered'>

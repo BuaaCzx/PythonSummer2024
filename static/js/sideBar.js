@@ -36,7 +36,7 @@ export default {
                     <li>
                         <hr class="dropdown-divider">
                     </li>
-                    <li><a class="dropdown-item" href="#">Sign out</a></li>
+                    <li><a class="dropdown-item" @click="logout">Sign out</a></li>
                 </ul>
             </div>
         </div>
@@ -65,6 +65,16 @@ export default {
     methods: {
         logout() {
             alert("logout!");
+            let that = this;
+            axios.get("/logout", {
+                params: {
+
+                }
+            }).then((response) => {
+                console.log(that);
+            }).catch((error) => {
+                console.log(error);
+            });
         }
     }
 }

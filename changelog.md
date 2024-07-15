@@ -12,3 +12,4 @@
 | 7.13 23:48  | LPR    | 修改主页，统一为bootstrap和vue，弃用原生js                   |
 | 7.14 0:18   | UUQ    | 将sidebar打包成为vue组件，增加了history页面，**需要/history接口** |
 | 7.14 20:55  | WDL    | 初始化Django项目，增加.gitignore文件，链接template/menu.html至主页 |
+| 7.15 12:42  | UUQ    | 修复了history页面CSS样式的bug（单击左侧menu会使得页面布局改变），初步完成logout功能 |
