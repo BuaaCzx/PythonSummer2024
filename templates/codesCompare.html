@@ -11,6 +11,7 @@
             },
             "scopes": {}
         }
+
     </script>
 
     <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.2.3/css/bootstrap.min.css" rel="stylesheet">
@@ -201,8 +202,6 @@
                             <div v-if="uploadedFiles.length > 0 && standardFileIndex !== null">
                                 <h3>
                                     {{ uploadedFiles[standardFileIndex].name }}
-                                    <span v-if="plagiarizedFiles.includes(standardFileIndex)" style="color: red; font-size: 0.8em;">（抄袭）</span>
-                                    <span v-else style="color: green; font-size: 0.8em;">（非抄袭）</span>
                                 </h3>
                                 <pre class="language-python" style="max-height: 400px; overflow-x: auto; overflow-y: auto; white-space: pre-wrap;" v-highlight><code>{{ fileContents[standardFileIndex] }}</code></pre>
                                 <button type="button" class="btn btn-primary" @click="downloadFile(standardFileIndex)">下载文件</button>
@@ -241,6 +240,7 @@
     });
 
     app.mount("#app");
+
 </script>
 
 </body>
