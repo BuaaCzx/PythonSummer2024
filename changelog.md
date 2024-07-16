@@ -16,6 +16,7 @@
 | 7.15 15:06  | LPR    | 增加代码上传界面codesCompare.html支持条形图显示、代码下载、standard代码高亮**（其它代码高亮会有bug，这个需要进一步排查）**，对sidebar的显示进行调整（头像放在上面）。**需要后端传入diff列表** |
 | 7.15 18:10  | LPR    | 修改了sidebar样式                                            |
 | 7.16 14：12 | LPR    | 修改了图标的样式，增加人工标记抄袭/取消标记抄袭按钮，可支持将抄袭文件统一导出为zip的功能 |
+| 7.16 17:53  | UUQ    | 增加了sidebar.js icon样式，修复了codesCompare页面模板中宽度过窄导致的margin占位div过窄问题<br>**未修复**：codesCompare页面右侧overflow-x滚动时优先级高于左侧offcanvas条、右侧页面宽度较大，是否改为按比例缩放？ |
 
 
 

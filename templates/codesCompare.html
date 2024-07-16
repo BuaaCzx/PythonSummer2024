@@ -28,6 +28,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.25.0/components/prism-python.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.25.0/components/prism-javascript.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.25.0/components/prism-markup.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 </head>
 <body>
 <div id="app" class="container-fluid"></div>
@@ -177,7 +178,7 @@
             }
         },
         template: `
-            <div class="d-flex flex-row" style="margin-left: 20vw; padding: 15px;">
+            <div class="d-flex flex-row" style="margin-left: clamp(200px, 20vw, 20vw); padding: 15px;">
                 <!-- 左侧 sidebar -->
                 <side-bar :now="now"></side-bar>
 
@@ -220,7 +221,7 @@
                                     <pre class="language-python" style="max-height: 400px; overflow-x: auto; overflow-y: auto; white-space: pre-wrap;"><code>{{ fileContents[selectedFileIndex] }}</code></pre>
                                     <button type="button" class="btn btn-primary" @click="downloadFile(selectedFileIndex)">下载文件</button>
                                     <button type="button" class="btn btn-danger"  @click="markAsPlagiarized(selectedFileIndex)">标记为抄袭</button>
-                                    <button type="button" class="btn btn-success" @click="markAsNotPlagiarized(selectedFileIndex)">标记为抄袭</button>
+                                    <button type="button" class="btn btn-success" @click="markAsNotPlagiarized(selectedFileIndex)">标记为未抄袭</button>
                                 </div>
                                 <h5 style="margin-top: 20px;">选择其他文件：</h5>
                                 <select v-model="selectedFileIndex" class="form-select mt-3">
