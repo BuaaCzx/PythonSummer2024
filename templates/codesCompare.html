@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -14,10 +15,13 @@
 
     <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.2.3/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.2.3/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.3/dist/jquery.min.js"
             integrity="sha256-pvPw+upLPUjgMXY0G+8O0xUf+/Im1MZjXxxgOcBQBXU=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="../static/js/echarts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts/theme/vintage.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.0/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <!-- Prism.js -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.25.0/themes/prism-okaidia.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.25.0/prism.min.js"></script>
@@ -28,20 +32,18 @@
 <body>
 <div id="app" class="container-fluid"></div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.2.2/echarts.min.js"></script>
 <script type="module">
     import { createApp } from 'vue';
     import sideBar from "../static/js/sideBar.js";
 
     const highlightDirective = {
-            mounted(el) {
-                Prism.highlightElement(el);
-            },
-            updated(el) {
-                Prism.highlightElement(el);
-            }
+        mounted(el) {
+            Prism.highlightElement(el);
+        },
+        updated(el) {
+            Prism.highlightElement(el);
+        }
     };
-
 
     const app = createApp({
         components: {
@@ -57,6 +59,7 @@
                 fileContents: [],
                 selectedFileIndex: null,
                 standardFileIndex: null,
+                plagiarizedFiles: [],
             };
         },
         methods: {
@@ -94,31 +97,69 @@
                 window.URL.revokeObjectURL(url);
                 document.body.removeChild(a);
             },
+            markAsPlagiarized(fileIndex) {
+                if (!this.plagiarizedFiles.includes(fileIndex)) {
+                    this.plagiarizedFiles.push(fileIndex);
+                }
+            },
+            markAsNotPlagiarized(fileIndex) {
+                if (this.plagiarizedFiles.includes(fileIndex)) {
+                    this.plagiarizedFiles.pop(fileIndex);
+                }
+            },
+            exportPlagiarizedFiles() {
+                const zip = new JSZip();
+                this.plagiarizedFiles.forEach(index => {
+                    zip.file(this.uploadedFiles[index].name, this.fileContents[index]);
+                });
+                zip.generateAsync({ type: 'blob' }).then(content => {
+                    saveAs(content, 'plagiarized_files.zip');
+                });
+            },
             updateChart(files) {
                 var fileNames = Array.from(files).slice(1).map(file => file.name);
                 var firstFileName = files[0].name;
 
-                var myChart = echarts.init(document.getElementById('chart1'));
+                var myChart = echarts.init(document.getElementById('chart1'), 'vintage');
+
+                var colors = [
+                    "#d87c7c",
+                    "#919e8b",
+                    "#d7ab82",
+                    "#6e7074",
+                    "#61a0a8",
+                    "#efa18d",
+                    "#787464",
+                    "#cc7e63",
+                    "#724e58",
+                    "#4b565b"
+                ];
 
                 var option = {
                     title: {
-                        text: `Standar: ${firstFileName}`,
+                        text: `Standard: ${firstFileName}`,
                     },
                     tooltip: {},
                     xAxis: {
                         data: fileNames
                     },
                     yAxis: {},
-                                        //data接口,传入list就行，希望是没有百分号的float
                     series: [{
                         name: 'Percentage',
                         type: 'bar',
-                        data: [81,32,15,4]
+                        data: [81, 32, 15, 4],
+                        itemStyle: {
+                            normal: {
+                                color: function(params) {
+                                    return colors[params.dataIndex % colors.length];
+                                }
+                            }
+                        }
                     }]
                 };
 
                 myChart.setOption(option);
-            },
+            }
         },
         mounted() {
             Prism.highlightAll();
@@ -128,6 +169,11 @@
                 if (newValue !== null && newValue !== this.standardFileIndex) {
                     this.standardFileIndex = 0; // Reset standard file index when selecting other files
                 }
+            }
+        },
+        computed: {
+            showExportButton() {
+                return this.plagiarizedFiles.length > 0;
             }
         },
         template: `
@@ -152,7 +198,11 @@
                         <!-- 右侧显示区域 -->
                         <div style="flex: 1; padding-right: 10px; overflow-x: auto; border-bottom: 1px solid #ccc;">
                             <div v-if="uploadedFiles.length > 0 && standardFileIndex !== null">
-                                <h3>Standard: {{ uploadedFiles[standardFileIndex].name }}</h3>
+                                <h3>
+                                    {{ uploadedFiles[standardFileIndex].name }}
+                                    <span v-if="plagiarizedFiles.includes(standardFileIndex)" style="color: red; font-size: 0.8em;">（抄袭）</span>
+                                    <span v-else style="color: green; font-size: 0.8em;">（非抄袭）</span>
+                                </h3>
                                 <pre class="language-python" style="max-height: 400px; overflow-x: auto; overflow-y: auto; white-space: pre-wrap;" v-highlight><code>{{ fileContents[standardFileIndex] }}</code></pre>
                                 <button type="button" class="btn btn-primary" @click="downloadFile(standardFileIndex)">下载文件</button>
                             </div>
@@ -162,9 +212,15 @@
                         <div style="flex: 1; padding-left: 10px; overflow-x: auto; border-bottom: 1px solid #ccc;">
                             <div v-if="uploadedFiles.length > 1">
                                 <div v-if="selectedFileIndex !== null && selectedFileIndex !== standardFileIndex">
-                                    <h3>{{ uploadedFiles[selectedFileIndex].name }}</h3>
+                                    <h3>
+                                        {{ uploadedFiles[selectedFileIndex].name }}
+                                        <span v-if="plagiarizedFiles.includes(selectedFileIndex)" style="color: red; font-size: 0.8em;">（抄袭）</span>
+                                        <span v-else style="color: green; font-size: 0.8em;">（非抄袭）</span>
+                                    </h3>
                                     <pre class="language-python" style="max-height: 400px; overflow-x: auto; overflow-y: auto; white-space: pre-wrap;"><code>{{ fileContents[selectedFileIndex] }}</code></pre>
                                     <button type="button" class="btn btn-primary" @click="downloadFile(selectedFileIndex)">下载文件</button>
+                                    <button type="button" class="btn btn-danger"  @click="markAsPlagiarized(selectedFileIndex)">标记为抄袭</button>
+                                    <button type="button" class="btn btn-success" @click="markAsNotPlagiarized(selectedFileIndex)">标记为抄袭</button>
                                 </div>
                                 <h5 style="margin-top: 20px;">选择其他文件：</h5>
                                 <select v-model="selectedFileIndex" class="form-select mt-3">
@@ -172,6 +228,11 @@
                                 </select>
                             </div>
                         </div>
+                    </div>
+
+                    <!-- 导出抄袭文件按钮 -->
+                    <div style="margin-top: 20px;" v-if="showExportButton">
+                        <button type="button" class="btn btn-danger" @click="exportPlagiarizedFiles">导出被标记为抄袭的文件</button>
                     </div>
                 </div>
             </div>
