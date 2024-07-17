@@ -201,9 +201,13 @@
                         <div style="flex: 1; padding-right: 10px; overflow-x: auto; border-bottom: 1px solid #ccc;">
                             <div v-if="uploadedFiles.length > 0 && standardFileIndex !== null">
                                 <h3>
-                                    {{ uploadedFiles[standardFileIndex].name }}
+
+                                    {% verbatim %}
+	                                    {{ uploadedFiles[standardFileIndex].name }}
+                                    {% endverbatim %}
+
                                 </h3>
-                                <pre class="language-python" style="max-height: 400px; overflow-x: auto; overflow-y: auto; white-space: pre-wrap;" v-highlight><code>{{ fileContents[standardFileIndex] }}</code></pre>
+                                <pre class="language-python" style="max-height: 400px; overflow-x: auto; overflow-y: auto; white-space: pre-wrap;" v-highlight><code>{% verbatim %} {{ fileContents[standardFileIndex] }} {% endverbatim %}</code></pre>
                                 <button type="button" class="btn btn-primary" @click="downloadFile(standardFileIndex)">下载文件</button>
                             </div>
                         </div>
@@ -213,18 +217,20 @@
                             <div v-if="uploadedFiles.length > 1">
                                 <div v-if="selectedFileIndex !== null && selectedFileIndex !== standardFileIndex">
                                     <h3>
-                                        {{ uploadedFiles[selectedFileIndex].name }}
+                                        {% verbatim %}
+                                            {{ uploadedFiles[selectedFileIndex].name }}
+                                        {% endverbatim %}
                                         <span v-if="plagiarizedFiles.includes(selectedFileIndex)" style="color: red; font-size: 0.8em;">（抄袭）</span>
                                         <span v-else style="color: green; font-size: 0.8em;">（非抄袭）</span>
                                     </h3>
-                                    <pre class="language-python" style="max-height: 400px; overflow-x: auto; overflow-y: auto; white-space: pre-wrap;"><code>{{ fileContents[selectedFileIndex] }}</code></pre>
+                                    <pre class="language-python" style="max-height: 400px; overflow-x: auto; overflow-y: auto; white-space: pre-wrap;"><code>{% verbatim %} {{ fileContents[selectedFileIndex] }} {% endverbatim %}</code></pre>
                                     <button type="button" class="btn btn-primary" @click="downloadFile(selectedFileIndex)">下载文件</button>
                                     <button type="button" class="btn btn-danger"  @click="markAsPlagiarized(selectedFileIndex)">标记为抄袭</button>
                                     <button type="button" class="btn btn-success" @click="markAsNotPlagiarized(selectedFileIndex)">标记为未抄袭</button>
                                 </div>
                                 <h5 style="margin-top: 20px;">选择其他文件：</h5>
                                 <select v-model="selectedFileIndex" class="form-select mt-3">
-                                    <option v-for="(file, index) in uploadedFiles.slice(1)" :key="index + 1" :value="index + 1">{{ file.name }}</option>
+                                    <option v-for="(file, index) in uploadedFiles.slice(1)" :key="index + 1" :value="index + 1">{% verbatim %} {{ file.name }} {% endverbatim %}</option>
                                 </select>
                             </div>
                         </div>

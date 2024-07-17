@@ -69,8 +69,8 @@
         template: `
         <div class='d-flex flex-row' style="margin-left: 20vw; padding: 15px;">
             <div>
-                <div>当前时间: {{ systemTime }}</div>
-                <div>登录时间: {{ loginTime }}</div>
+                <div>当前时间: {% verbatim %} {{ systemTime }} {% endverbatim %}</div>
+                <div>登录时间: {% verbatim %} {{ loginTime }} {% endverbatim %}</div>
                 <side-bar :now='now'></side-bar>
             </div>
         </div>

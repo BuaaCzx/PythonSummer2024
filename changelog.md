@@ -20,5 +20,6 @@
 | 7.16 02:36  | WDL    | 完成了部分用户登录和认证部分，增加了两个URL：users/login, users/register， **已migrate** |
 | 7.17 12：05 | LPR    | 将之前写好的html移动到users目录下，将static移入app中 **（发现有bug，回滚到上一次提交）** |
 | 7.17 14：43 | LPR    | 完成登录注册页面，@WDL 可以看一下我在你的user app里面viewer留言 |
-| 7.18 0:25   | WDL    | _(上述注释中的问题已解决)_ 合并登录与注册功能，链接check/，codesCompare/与对应的template, 和其他的一些小改动 |
+| 7.18  0：25 | WDL    | _(上述注释中的问题已解决)_ 合并登录与注册功能，链接check/，codesCompare/与对应的template, 和其他的一些小改动 |
+| 7.18  1：13 | LPR    | demo版本（后续可以用组合式api彻底解决，现在属于能够正常运行）在codesCompare和menu中非django传参部分禁止django渲染，解决上一次push后的问题 |
 
