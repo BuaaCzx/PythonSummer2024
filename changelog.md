@@ -19,4 +19,5 @@
 | 7.16 17:53  | UUQ    | 增加了sidebar.js icon样式，修复了codesCompare页面模板中宽度过窄导致的margin占位div过窄问题<br>**未修复**：codesCompare页面右侧overflow-x滚动时优先级高于左侧offcanvas条、右侧页面宽度较大，是否改为按比例缩放？ |
 | 7.16 02:36  | WDL    | 完成了部分用户登录和认证部分，增加了两个URL：users/login, users/register， **已migrate** |
 | 7.17 12：05 | LPR    | 将之前写好的html移动到users目录下，将static移入app中 **（发现有bug，回滚到上一次提交）** |
+| 7.17 14：43 | LPR    | 完成登录注册页面，@WDL 可以看一下我在你的user app里面viewer留言 |
 
