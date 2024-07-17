@@ -17,6 +17,6 @@
 | 7.15 18:10  | LPR    | 修改了sidebar样式                                            |
 | 7.16 14：12 | LPR    | 修改了图标的样式，增加人工标记抄袭/取消标记抄袭按钮，可支持将抄袭文件统一导出为zip的功能 |
 | 7.16 17:53  | UUQ    | 增加了sidebar.js icon样式，修复了codesCompare页面模板中宽度过窄导致的margin占位div过窄问题<br>**未修复**：codesCompare页面右侧overflow-x滚动时优先级高于左侧offcanvas条、右侧页面宽度较大，是否改为按比例缩放？ |
-| 7.16 02:36  | WDL    | 完成了部分用户登录和认证部分，增加了两个URL：users/login, users/register， **已migrate**  |
-
+| 7.16 02:36  | WDL    | 完成了部分用户登录和认证部分，增加了两个URL：users/login, users/register， **已migrate** |
+| 7.17 12：05 | LPR    | 将之前写好的html移动到users目录下，将static移入app中         |
 
