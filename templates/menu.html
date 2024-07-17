@@ -23,7 +23,7 @@
 <body>
 
     <script type="module">
-    import {createApp} from 'vue';
+    import { createApp } from 'vue';
     import sideBar from "../static/js/sideBar.js";
 
     const root = '/'
@@ -37,6 +37,8 @@
                 historyRoute: root + 'submissions/',
                 now: "主页",
                 isLoaded: false,
+                systemTime: '',
+                loginTime: ''
             }
         },
         created: function () {
@@ -53,10 +55,24 @@
                 console.log(that);
                 that.isLoaded = true;
             });
+            this.loginTime = new Date().toLocaleString();
+        },
+        mounted: function () {
+            this.updateSystemTime();
+            setInterval(this.updateSystemTime, 1000);
+        },
+        methods: {
+            updateSystemTime() {
+                this.systemTime = new Date().toLocaleString();
+            }
         },
         template: `
         <div class='d-flex flex-row' style="margin-left: 20vw; padding: 15px;">
-            <side-bar :now='now'></side-bar>
+            <div>
+                <div>当前时间: {{ systemTime }}</div>
+                <div>登录时间: {{ loginTime }}</div>
+                <side-bar :now='now'></side-bar>
+            </div>
         </div>
         `,
     });
@@ -67,3 +83,4 @@
     <!--    这是导航栏-->
 </body>
 </html>
+
