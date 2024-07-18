@@ -62,6 +62,8 @@
                 selectedFileIndex: null,
                 standardFileIndex: null,
                 plagiarizedFiles: [],
+                results_similarity: [],
+                results_name: [],
             };
         },
         methods: {
@@ -69,9 +71,7 @@
                 const files = event.target.files;
                 if (files && files.length > 0) {
 
-                    this.uploadedFiles = Array.from(files);
-                    this.readFileContents();
-                    this.updateChart(files); // Call updateChart after files are uploaded
+
 
                     const formData = new FormData();
                     for (let i = 0; i < files.length; i++) {
@@ -82,8 +82,11 @@
                     axios.post('/api/comparison/', formData)
                         .then(response => {
                             // 处理响应
-                            console.log(response.data);
-                            this.results = response.data.results;
+                            this.results_similarity = response.data.results.map(result => result.similarity_ratio);
+                            this.results_name = response.data.results.map(result => result.file_name);
+                            this.uploadedFiles = Array.from(files);
+                            this.readFileContents();
+                            this.updateChart(files); // Call updateChart after files are uploaded
                         })
                         .catch(error => {
                             // 处理错误
@@ -141,6 +144,7 @@
                 var fileNames = Array.from(files).slice(1).map(file => file.name);
                 var firstFileName = files[0].name;
 
+                var similarity = Array.from(this.results_similarity)
                 var myChart = echarts.init(document.getElementById('chart1'), 'vintage');
 
                 var colors = [
@@ -168,7 +172,7 @@
                     series: [{
                         name: 'Percentage',
                         type: 'bar',
-                        data: [81, 32, 15, 4],
+                        data: similarity,
                         itemStyle: {
                             normal: {
                                 color: function(params) {
