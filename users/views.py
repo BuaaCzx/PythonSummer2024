@@ -3,6 +3,7 @@ from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_protect
 
+
 @csrf_protect
 def user_login(request):
     if request.method == 'POST':
@@ -27,6 +28,7 @@ def user_login(request):
             else:
                 return render(request, 'users/login.html', {'error': 'Invalid username or password'})
     return render(request, 'users/login.html')
+
 
 def user_logout(request):
     logout(request)

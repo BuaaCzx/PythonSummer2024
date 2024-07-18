@@ -17,11 +17,13 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from . import views
+from .views import CodeComparisonView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.home_page, name='home_page'),
     path('users/', include('users.urls')),
     path('check/', views.code_check, name='code_check'),
-    path('history/', views.history, name='history')
+    path('history/', views.history, name='history'),
+    path('api/comparison/', CodeComparisonView.as_view(), name='code_comparison'),
 ]
