@@ -65,14 +65,33 @@
             };
         },
         methods: {
-            handleFileChange(event) {
+             handleFileChange(event) {
                 const files = event.target.files;
                 if (files && files.length > 0) {
+
                     this.uploadedFiles = Array.from(files);
                     this.readFileContents();
                     this.updateChart(files); // Call updateChart after files are uploaded
+
+                    const formData = new FormData();
+                    for (let i = 0; i < files.length; i++) {
+                        formData.append('files', files[i]);
+                    }
+                    formData.append('comparison_type', 'single_to_multiple'); // 比较类型，根据后端要求设置
+
+                    axios.post('/api/comparison/', formData)
+                        .then(response => {
+                            // 处理响应
+                            console.log(response.data);
+                            this.results = response.data.results;
+                        })
+                        .catch(error => {
+                            // 处理错误
+                            console.error('Error uploading files:', error);
+                        });
                 }
             },
+
             readFileContents() {
                 this.fileContents = [];
                 this.uploadedFiles.forEach((file, index) => {

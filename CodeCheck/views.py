@@ -23,7 +23,6 @@ class CodeComparisonView(View):
     def post(self, request, *args, **kwargs):
         # 根据请求中的参数决定执行哪种比较，默认为一对多
         comparison_type = request.POST.get('comparison_type', 'single_to_multiple')
-
         if comparison_type == 'single_to_multiple':
             return self.single_to_multiple_comparison(request)
         elif comparison_type == 'pairwise':
@@ -33,6 +32,7 @@ class CodeComparisonView(View):
 
     def single_to_multiple_comparison(self, request):
         files = request.FILES.getlist('files')
+
         if len(files) < 2:
             return JsonResponse({'error': 'At least two files are required.'}, status=400)
 
@@ -47,7 +47,6 @@ class CodeComparisonView(View):
                 'file_name': file.name,
                 'similarity_ratio': ratio
             })
-
         return JsonResponse({'results': similarity_results})
 
     def pairwise_comparison(self, request):
