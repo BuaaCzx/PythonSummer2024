@@ -6,6 +6,8 @@
 !.vscode/extensions.json
 .history
 
+.idea/*
+
 # Environments
 .env
 .venv
