@@ -8,28 +8,50 @@
             "imports": {
                 "vue": "https://unpkg.com/vue@3.4.29/dist/vue.esm-browser.js",
                 "axios": "https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js"
-            },
-            "scopes": {}
+            }
         }
-
     </script>
-
     <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.2.3/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.2.3/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.3/dist/jquery.min.js"
-            integrity="sha256-pvPw+upLPUjgMXY0G+8O0xUf+/Im1MZjXxxgOcBQBXU=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.3/dist/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="../static/js/echarts.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/echarts/theme/vintage.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.0/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-    <!-- Prism.js -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.25.0/themes/prism-okaidia.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.25.0/prism.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.25.0/components/prism-python.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.25.0/components/prism-javascript.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.25.0/components/prism-markup.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        #chart-container {
+            width: 100%;
+            height: 600px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+        }
+        .echarts-container {
+            height: 100%;
+        }
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1040;
+        }
+        .modal-dialog {
+            max-width: 90%;
+            max-height: 90%;
+        }
+        .modal-content {
+            border-radius: 0.5rem;
+        }
+    </style>
 </head>
 <body>
 <div id="app" class="container-fluid"></div>
@@ -60,54 +82,72 @@
                 uploadedFiles: [],
                 fileContents: [],
                 selectedFileIndex: null,
-                standardFileIndex: null,
+                standardFileIndex: 0,
                 plagiarizedFiles: [],
                 results_similarity: [],
                 results_name: [],
+                showModal: false,
             };
         },
         methods: {
-             handleFileChange(event) {
+            handleFileChange(event) {
                 const files = event.target.files;
                 if (files && files.length > 0) {
-
-
-
                     const formData = new FormData();
                     for (let i = 0; i < files.length; i++) {
                         formData.append('files', files[i]);
                     }
-                    formData.append('comparison_type', 'single_to_multiple'); // 比较类型，根据后端要求设置
+                    formData.append('comparison_type', 'single_to_multiple');
 
                     axios.post('/api/comparison/', formData)
                         .then(response => {
-                            // 处理响应
+                            console.log(response.data.results);
                             this.results_similarity = response.data.results.map(result => result.similarity_ratio);
                             this.results_name = response.data.results.map(result => result.file_name);
                             this.uploadedFiles = Array.from(files);
+                            this.plagiarizedFiles = [];
                             this.readFileContents();
-                            this.updateChart(files); // Call updateChart after files are uploaded
+                            this.updateChart();
                         })
                         .catch(error => {
-                            // 处理错误
                             console.error('Error uploading files:', error);
                         });
                 }
             },
 
             readFileContents() {
+                const order = this.results_name;
+                console.log(order);
                 this.fileContents = [];
-                this.uploadedFiles.forEach((file, index) => {
-                    const reader = new FileReader();
-                    reader.onload = (event) => {
-                        this.fileContents.push(event.target.result);
-                        if (index === 0) {
-                            this.standardFileIndex = 0;
+                this.standardFileIndex = 0;
+                const readerStd = new FileReader();
+                readerStd.onload = (event) => {
+                    // 获取文件内容
+                    const fileContent = event.target.result;
+                    this.fileContents.push(event.target.result);
+                    console.log('文件内容:', fileContent);
+                };
+                const file = this.uploadedFiles[0];
+                if (file) {
+                    readerStd.readAsText(file);
+                } else {
+                    console.error('没有找到索引为 0 的文件。');
+                }
+                order.forEach((fileName, index) => {
+                    for(let i = 1; i < this.uploadedFiles.length; i++) {
+                        const thisName = this.uploadedFiles[i].name;
+                        if(thisName === fileName) {
+                            const reader = new FileReader();
+                            reader.onload = (event) => {
+                                this.fileContents.push(event.target.result);
+                            };
+                            reader.readAsText(this.uploadedFiles[i])
+                            break;
                         }
-                    };
-                    reader.readAsText(file);
+                    }
                 });
             },
+
             downloadFile(fileIndex) {
                 const file = this.uploadedFiles[fileIndex];
                 const blob = new Blob([this.fileContents[fileIndex]], { type: "text/plain" });
@@ -125,11 +165,13 @@
                 if (!this.plagiarizedFiles.includes(fileIndex)) {
                     this.plagiarizedFiles.push(fileIndex);
                 }
+                this.updateChart();
             },
             markAsNotPlagiarized(fileIndex) {
                 if (this.plagiarizedFiles.includes(fileIndex)) {
-                    this.plagiarizedFiles.pop(fileIndex);
+                    this.plagiarizedFiles = this.plagiarizedFiles.filter(index => index !== fileIndex);
                 }
+                this.updateChart();
             },
             exportPlagiarizedFiles() {
                 const zip = new JSZip();
@@ -140,11 +182,17 @@
                     saveAs(content, 'plagiarized_files.zip');
                 });
             },
-            updateChart(files) {
-                var fileNames = Array.from(files).slice(1).map(file => file.name);
-                var firstFileName = files[0].name;
+            updateChart() {
+                var fileNames = Array.from(this.results_name);
+                var firstFileName = this.uploadedFiles[0].name;
+                var similarity = Array.from(this.results_similarity);
 
-                var similarity = Array.from(this.results_similarity)
+                // 计算图表容器的高度
+                var containerHeight = Math.max(330, fileNames.length * 50); // Adjust height per file item
+
+                // 更新图表容器的高度
+                document.getElementById('chart1').style.height = containerHeight + 'px';
+
                 var myChart = echarts.init(document.getElementById('chart1'), 'vintage');
 
                 var colors = [
@@ -165,34 +213,89 @@
                         text: `Standard: ${firstFileName}`,
                     },
                     tooltip: {},
-                    xAxis: {
-                        data: fileNames
+                    yAxis: {
+                        data: fileNames,
+                        axisLabel: {
+                            margin: 10,
+                            fontSize: 15
+                        }
                     },
-                    yAxis: {},
+                    xAxis: {
+                        type: 'value',
+                        axisLabel: {
+                            formatter: '{value}',
+                        },
+                        axisLine: {
+                            onZero: false,
+                        },
+                    },
+                    grid: {
+                        top: 50,
+                        bottom: 100,
+                        left: 240,
+                        right: 50
+                    },
                     series: [{
                         name: 'Percentage',
                         type: 'bar',
                         data: similarity,
+                        barWidth: 30,
+                        barCategoryGap: '20%',
+                        barGap: '10%',
                         itemStyle: {
                             normal: {
                                 color: function(params) {
                                     return colors[params.dataIndex % colors.length];
                                 }
                             }
-                        }
-                    }]
+                        },
+                        label: {
+                            show: true,
+                            position: 'right',
+                            formatter: function(params) {
+                                return this.plagiarizedFiles.includes(params.dataIndex + 1) ? '✗' : '✓';
+                            }.bind(this),
+                            textStyle: {
+                                fontSize: 22,
+                                color: 'black',
+                            }
+                        },
+                    }],
                 };
 
                 myChart.setOption(option);
+
+                myChart.on('click', (params) => {
+                    this.selectedFileIndex = params.dataIndex + 1;
+                    this.showModal = true;
+                });
+                myChart.resize(); // Ensure chart resizes properly
+            },
+
+            closeModal() {
+                this.showModal = false;
+            },
+
+            handleBackdropClick(event) {
+                // Ensure click events on the backdrop are processed correctly
+                if (event.target.classList.contains('modal-backdrop')) {
+                    this.closeModal();
+                }
             }
         },
         mounted() {
             Prism.highlightAll();
+
+            // Add event listener for backdrop click
+            document.addEventListener('click', this.handleBackdropClick);
+        },
+        beforeUnmount() {
+            // Remove event listener for backdrop click
+            document.removeEventListener('click', this.handleBackdropClick);
         },
         watch: {
             selectedFileIndex(newValue) {
                 if (newValue !== null && newValue !== this.standardFileIndex) {
-                    this.standardFileIndex = 0; // Reset standard file index when selecting other files
                 }
             }
         },
@@ -216,52 +319,43 @@
                     <hr>
 
                     <!-- 图表区域 -->
-                    <div id="chart1" style="width: 100%; height: 400px; margin-top: 20px;"></div>
-
-                    <!-- 主显示区域 -->
-                    <div class="d-flex flex-row flex-grow-1">
-                        <!-- 右侧显示区域 -->
-                        <div style="flex: 1; padding-right: 10px; overflow-x: auto; border-bottom: 1px solid #ccc;">
-                            <div v-if="uploadedFiles.length > 0 && standardFileIndex !== null">
-                                <h3>
-
-                                    {% verbatim %}
-	                                    {{ uploadedFiles[standardFileIndex].name }}
-                                    {% endverbatim %}
-
-                                </h3>
-                                <pre class="language-python" style="max-height: 400px; overflow-x: auto; overflow-y: auto; white-space: pre-wrap;" v-highlight><code>{% verbatim %} {{ fileContents[standardFileIndex] }} {% endverbatim %}</code></pre>
-                                <button type="button" class="btn btn-primary" @click="downloadFile(standardFileIndex)">下载文件</button>
-                            </div>
-                        </div>
-
-                        <!-- 下拉选择和显示其他文件 -->
-                        <div style="flex: 1; padding-left: 10px; overflow-x: auto; border-bottom: 1px solid #ccc;">
-                            <div v-if="uploadedFiles.length > 1">
-                                <div v-if="selectedFileIndex !== null && selectedFileIndex !== standardFileIndex">
-                                    <h3>
-                                        {% verbatim %}
-                                            {{ uploadedFiles[selectedFileIndex].name }}
-                                        {% endverbatim %}
-                                        <span v-if="plagiarizedFiles.includes(selectedFileIndex)" style="color: red; font-size: 0.8em;">（抄袭）</span>
-                                        <span v-else style="color: green; font-size: 0.8em;">（非抄袭）</span>
-                                    </h3>
-                                    <pre class="language-python" style="max-height: 400px; overflow-x: auto; overflow-y: auto; white-space: pre-wrap;"><code>{% verbatim %} {{ fileContents[selectedFileIndex] }} {% endverbatim %}</code></pre>
-                                    <button type="button" class="btn btn-primary" @click="downloadFile(selectedFileIndex)">下载文件</button>
-                                    <button type="button" class="btn btn-danger"  @click="markAsPlagiarized(selectedFileIndex)">标记为抄袭</button>
-                                    <button type="button" class="btn btn-success" @click="markAsNotPlagiarized(selectedFileIndex)">标记为未抄袭</button>
-                                </div>
-                                <h5 style="margin-top: 20px;">选择其他文件：</h5>
-                                <select v-model="selectedFileIndex" class="form-select mt-3">
-                                    <option v-for="(file, index) in uploadedFiles.slice(1)" :key="index + 1" :value="index + 1">{% verbatim %} {{ file.name }} {% endverbatim %}</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 导出抄袭文件按钮 -->
+                    <div id="chart1" style="width: 100%; height: 560px; margin-top: 20px; overflow-y: auto;"></div>
                     <div style="margin-top: 20px;" v-if="showExportButton">
                         <button type="button" class="btn btn-primary" @click="exportPlagiarizedFiles">导出被标记为抄袭的文件</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 模态框 -->
+            <div v-if="showModal">
+                <div class="modal-backdrop" @click="handleBackdropClick"></div>
+                <div class="modal" tabindex="-1" style="display: block;">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">{% verbatim %} {{ uploadedFiles[selectedFileIndex].name }} {% endverbatim %}</h5>
+                                <span v-if="plagiarizedFiles.includes(selectedFileIndex)" style="color: red; font-size: 0.8em;">（抄袭）</span>
+                                <span v-else style="color: green; font-size: 0.8em;">（非抄袭）</span>
+                                <button type="button" class="btn-close" @click="closeModal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body d-flex">
+                                <!-- 左侧显示标准文件 -->
+                                <div style="flex: 1; padding-right: 10px;">
+                                    <h6>标准文件代码</h6>
+                                    <pre class="language-python" style="max-height: 400px; overflow-x: auto; overflow-y: auto; white-space: pre-wrap;" v-highlight><code>{% verbatim %}{{ fileContents[standardFileIndex] }}{% endverbatim %}</code></pre>
+                                </div>
+                                <!-- 右侧显示选择的文件 -->
+                                <div style="flex: 1; padding-left: 10px;">
+                                    <h6>选择文件代码</h6>
+                                    <pre class="language-python" style="max-height: 400px; overflow-x: auto; overflow-y: auto; white-space: pre-wrap;" v-highlight><code v-if="selectedFileIndex !== null">{% verbatim %}{{ fileContents[selectedFileIndex] }}{% endverbatim %}</code></pre>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-primary" @click="downloadFile(standardFileIndex)">下载标准文件</button>
+                                <button type="button" class="btn btn-danger" @click="markAsPlagiarized(selectedFileIndex)">标记为抄袭</button>
+                                <button type="button" class="btn btn-success" @click="markAsNotPlagiarized(selectedFileIndex)">标记为未抄袭</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -269,7 +363,6 @@
     });
 
     app.mount("#app");
-
 </script>
 
 </body>

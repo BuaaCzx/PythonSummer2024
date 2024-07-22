@@ -64,7 +64,7 @@ class CodeComparisonView(View):
             })
 
         # 按重复率从大到小排序
-        similarity_results.sort(key=lambda x: x['similarity_ratio'], reverse=True)
+        similarity_results.sort(key=lambda x: x['similarity_ratio'], reverse=False)
 
         return JsonResponse({'results': similarity_results})
 
