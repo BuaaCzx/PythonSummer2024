@@ -1,0 +1,64 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f8f9fa;
+    color: #333;
+}
+
+.card {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+pre {
+    background-color: #e9ecef;
+    padding: 15px;
+    border-radius: 5px;
+    overflow-x: auto;
+}
+
+h1, h2 {
+    color: #007bff;
+}
+
+h4 {
+    margin-top: 20px;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+    border-color: #004085;
+}
+
+table.diff {
+    font-family: 'Fira Code', monospace;
+    border: medium;
+}
+
+.diff_header {
+    background-color: #e0e0e0;
+}
+
+td.diff_header {
+    text-align: right;
+}
+
+.diff_next {
+    background-color: #c0c0c0;
+}
+
+.diff_add {
+    background-color: #aaffaa;
+}
+
+.diff_chg {
+    background-color: #ffff77;
+}
+
+.diff_sub {
+    background-color: #ffaaaa;
+}
+

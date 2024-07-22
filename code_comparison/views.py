@@ -5,7 +5,7 @@ from html import escape
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
 from django.http import JsonResponse
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
@@ -128,7 +128,23 @@ def api_logout(request):
 def get_dif(text1, text2):
     lines1 = text1.splitlines()
     lines2 = text2.splitlines()
-    differ = difflib.Differ()
-    diff_result = differ.compare(lines1, lines2)
-    diff_content = '\n'.join(diff_result)
+    # differ = difflib.Differ()
+    differ = difflib.HtmlDiff()
+    # diff_result = differ.compare(lines1, lines2)
+    # diff_content = '\n'.join(diff_result)
+    diff_content = differ.make_table(lines1, lines2, fromdesc='Standard', todesc='Submitted')
     return diff_content
+
+def submission_details(request, submission_id):
+    submission = get_object_or_404(CodeComparisonHistory, id=submission_id)
+    similarity_ratio_percent = round(submission.similarity_ratio * 100, 2)
+    submission_dict = {
+        "file1": submission.file1,
+        "file2": submission.file2,
+        "file1_name": submission.file1_name,
+        "file2_name": submission.file2_name,
+        "similarity_ratio_percent": similarity_ratio_percent,
+        "diff_content": submission.diff_content,
+        "created_at": submission.created_at.strftime('%Y-%m-%d %H:%M:%S')
+    }
+    return render(request, "submission_details.html", submission_dict)
