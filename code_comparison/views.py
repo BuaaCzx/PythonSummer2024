@@ -24,13 +24,15 @@ class CodeComparisonView(View):
         comparison_type = request.POST.get('comparison_type', 'single_to_multiple')
         if comparison_type == 'single_to_multiple':
             return self.single_to_multiple_comparison(request)
-        elif comparison_type == 'pairwise':
-            return self.pairwise_comparison(request)
+        elif comparison_type == 'group':
+            return self.group_comparison(request)
         else:
             return JsonResponse({'error': 'Invalid comparison type'}, status=400)
 
     def single_to_multiple_comparison(self, request):
         files = request.FILES.getlist('files')
+
+
 
         if len(files) < 2:
             return JsonResponse({'error': 'At least two files are required.'}, status=400)
@@ -68,31 +70,57 @@ class CodeComparisonView(View):
 
         return JsonResponse({'results': similarity_results})
 
-    def pairwise_comparison(self, request):
-        # 这个方法可能用不上，需要进一步讨论确定分组查询的需求
+    def group_comparison(self, request):
+        # print(request.FILES)
+        # print(request.POST)
         files = request.FILES.getlist('files')
+        result = []
+
+        # print(files)
+        # print(len(files))
+
         if len(files) < 2:
             return JsonResponse({'error': 'At least two files are required for pairwise comparison.'}, status=400)
+        threshold = 0.8
+        plagiarism_groups = []
+        used_indices = set()
 
-        file_contents = [file.read().decode('utf-8') for file in files]
-        matrix_size = len(file_contents)
-        similarity_table = [[0 for _ in range(matrix_size)] for _ in range(matrix_size)]
+        # print('start group comparison')
 
-        for i in range(matrix_size):
-            for j in range(matrix_size):
-                if i != j:
-                    ratio = difflib.SequenceMatcher(None, file_contents[i], file_contents[j]).quick_ratio()
-                    similarity_table[i][j] = ratio
-                else:
-                    similarity_table[i][j] = 1.0  # 相同文件之间的相似度为1
+        for i in range(len(files)):
+            if i in used_indices:
+                continue
+            # print('start compare file ' + i)
+            # 为当前代码创建一个新的抄袭嫌疑组
+            plagiarism_group = [i]
+            file_content = files[i].read().decode('utf-8')
+            files[i].seek(0)
+            # print(file_content)
+            for j in range(i + 1, len(files)):
+                if j in used_indices:
+                    continue
+                file2_content = files[j].read().decode('utf-8')
+                files[j].seek(0)
+                ratio = difflib.SequenceMatcher(None, file_content, file2_content).quick_ratio()
+                if ratio > threshold:
+                    plagiarism_group.append(j)
+                    used_indices.add(j)
 
-        file_names = [file.name for file in files]
-        results = {
-            'file_names': file_names,
-            'similarity_table': similarity_table
-        }
+            if len(plagiarism_group) > 1:
+                plagiarism_groups.append(plagiarism_group)
+                used_indices.add(i)
 
-        return JsonResponse({'results': results})
+        for group in plagiarism_groups:
+            result.append({
+                'file_names': [files[i].name for i in group],
+                'file_contents': [files[i].read().decode('utf-8') for i in group]
+            })
+        #     print(group[0])
+        #     print(files[group[0]].read().decode('utf-8'))
+        #
+        # print(result)
+
+        return JsonResponse({'result': result})
 
 
 @login_required
@@ -134,6 +162,7 @@ def get_dif(text1, text2):
     # diff_content = '\n'.join(diff_result)
     diff_content = differ.make_table(lines1, lines2, fromdesc='Standard', todesc='Submitted')
     return diff_content
+
 
 def submission_details(request, submission_id):
     submission = get_object_or_404(CodeComparisonHistory, id=submission_id)

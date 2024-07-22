@@ -22,6 +22,6 @@ from .views import CodeComparisonView, code_comparison_history, api_logout
 urlpatterns = [
     path('api/comparison/', CodeComparisonView.as_view(), name='code_comparison'),
     path('api/history/', code_comparison_history, name='code_comparison_history'),
-    path('api/logout', api_logout, name='api_logout'),
+    path('api/logout/', api_logout, name='api_logout'),
     path('submissions/<int:submission_id>', views.submission_details, name='submission_details'),
 ]
