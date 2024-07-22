@@ -86,6 +86,7 @@
                 plagiarizedFiles: [],
                 results_similarity: [],
                 results_name: [],
+                results_diffs: [],
                 showModal: false,
             };
         },
@@ -101,9 +102,10 @@
 
                     axios.post('/api/comparison/', formData)
                         .then(response => {
-                            console.log(response.data.results);
                             this.results_similarity = response.data.results.map(result => result.similarity_ratio);
                             this.results_name = response.data.results.map(result => result.file_name);
+                            this.results_diffs = response.data.results.map(result => result.diff_content);
+                            console.log(this.results_diffs);
                             this.uploadedFiles = Array.from(files);
                             this.plagiarizedFiles = [];
                             this.readFileContents();
@@ -333,21 +335,22 @@
                     <div class="modal-dialog modal-lg">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h5 class="modal-title">{% verbatim %} {{ uploadedFiles[selectedFileIndex].name }} {% endverbatim %}</h5>
+                                <h5 class="modal-title">{% verbatim %} {{ results_name[selectedFileIndex - 1] }} {% endverbatim %}</h5>
                                 <span v-if="plagiarizedFiles.includes(selectedFileIndex)" style="color: red; font-size: 0.8em;">（抄袭）</span>
                                 <span v-else style="color: green; font-size: 0.8em;">（非抄袭）</span>
                                 <button type="button" class="btn-close" @click="closeModal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body d-flex">
                                 <!-- 左侧显示标准文件 -->
-                                <div style="flex: 1; padding-right: 10px;">
+                                <div style="flex: 4; padding-right: 10px;">
                                     <h6>标准文件代码</h6>
                                     <pre class="language-python" style="max-height: 400px; overflow-x: auto; overflow-y: auto; white-space: pre-wrap;" v-highlight><code>{% verbatim %}{{ fileContents[standardFileIndex] }}{% endverbatim %}</code></pre>
                                 </div>
                                 <!-- 右侧显示选择的文件 -->
-                                <div style="flex: 1; padding-left: 10px;">
+                                <div style="flex: 6; padding-left: 10px;">
                                     <h6>选择文件代码</h6>
-                                    <pre class="language-python" style="max-height: 400px; overflow-x: auto; overflow-y: auto; white-space: pre-wrap;" v-highlight><code v-if="selectedFileIndex !== null">{% verbatim %}{{ fileContents[selectedFileIndex] }}{% endverbatim %}</code></pre>
+                                    <pre class="language-python" style="max-height: 400px; overflow-x: auto; overflow: auto; white-space: pre-wrap;" v-highlight><code v-if="selectedFileIndex !== null">{% verbatim %}{{ fileContents[selectedFileIndex] }}{% endverbatim %}</code></pre>
+                                    <pre class="language-python" style="max-height: 400px; overflow-x: auto; overflow: auto; white-space: pre-wrap;" v-highlight><code v-if="selectedFileIndex !== null">{% verbatim %}{{ results_diffs[selectedFileIndex - 1] }}{% endverbatim %}</code></pre>
                                 </div>
                             </div>
                             <div class="modal-footer">

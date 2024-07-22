@@ -28,4 +28,5 @@
 | 7.22 14:07   | czx    | 历史记录返回diff，加了个程设分组查询的代码 group_check_copy.py，有空看看怎么实现的 |
 | 7.22 16:10   | UUQ    | 后端增加**/api/logout/接口**，并在前端sidebar组件中**对接完毕**（亲测可用），增加了**对/history/的鉴权**（login required，否则跳转到users/login/，方便测试），**修改history.html，实现了初步的信息展示**（但是跳转和一些具体的信息展示还没有写好，**细节需要讨论**） |
 | 7：22 16：24 | LPR    | 修改codeCompared                                             |
+| 7：22 16：50 | LPR    | 修改codeCompared文件，将diff文件接入，图形化垂直展示（具体见页面，太多了） |
 

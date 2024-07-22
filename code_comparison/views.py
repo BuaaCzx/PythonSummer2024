@@ -60,7 +60,7 @@ class CodeComparisonView(View):
             similarity_results.append({
                 'file_name': file.name,
                 'similarity_ratio': ratio,
-                'diff_content': escape(diff_content)
+                'diff_content': diff_content
             })
 
         # 按重复率从大到小排序
