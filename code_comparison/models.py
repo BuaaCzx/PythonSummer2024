@@ -10,6 +10,7 @@ class CodeComparisonHistory(models.Model):
     file1_name = models.CharField(max_length=255)  # 文件名
     file2_name = models.CharField(max_length=255)
     similarity_ratio = models.FloatField()
+    diff_content = models.TextField()  # 差异内容
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

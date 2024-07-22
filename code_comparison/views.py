@@ -1,4 +1,6 @@
 import difflib
+from datetime import datetime
+from html import escape
 
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
@@ -10,8 +12,6 @@ from django.views.decorators.http import require_http_methods
 
 from code_comparison.models import CodeComparisonHistory
 
-
-# Create your views here.
 
 # 这行要加，等登录登出功能实现完善之后再加上，并且如果未登录时接收到请求，返回一个错误码
 # @login_required
@@ -42,6 +42,9 @@ class CodeComparisonView(View):
         for file in files[1:]:
             file_content = file.read().decode('utf-8')
             ratio = difflib.SequenceMatcher(None, std_content, file_content).quick_ratio()
+
+            diff_content = get_dif(std_content, file_content)
+
             # 存表
             CodeComparisonHistory.objects.create(
                 user=user,
@@ -49,12 +52,19 @@ class CodeComparisonView(View):
                 file2=file_content,
                 file1_name=std_file.name,
                 file2_name=file.name,
-                similarity_ratio=ratio
+                similarity_ratio=ratio,
+                created_at=datetime.now(),
+                diff_content=diff_content
             )
             similarity_results.append({
                 'file_name': file.name,
-                'similarity_ratio': ratio
+                'similarity_ratio': ratio,
+                'diff_content': escape(diff_content)
             })
+
+        # 按重复率从大到小排序
+        similarity_results.sort(key=lambda x: x['similarity_ratio'], reverse=True)
+
         return JsonResponse({'results': similarity_results})
 
     def pairwise_comparison(self, request):
@@ -101,3 +111,12 @@ def code_comparison_history(request):
             'created_at': history.created_at
         })
     return JsonResponse({'history': history_list})
+
+
+def get_dif(text1, text2):
+    lines1 = text1.splitlines()
+    lines2 = text2.splitlines()
+    differ = difflib.Differ()
+    diff_result = differ.compare(lines1, lines2)
+    diff_content = '\n'.join(diff_result)
+    return diff_content
