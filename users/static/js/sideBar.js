@@ -70,12 +70,16 @@ export default {
     },
     methods: {
         logout() {
-            alert("logout!");
+            alert("logout at users static");
             let that = this;
-            axios.get("/logout", {
+            axios.get("/api/logout", {
                 params: {}
             }).then((response) => {
-                console.log(that);
+                console.log(response);
+                if (response.status === 200 && response.data.logout === true) {
+                    window.location.href = '/users/login/';
+                    alert("注销成功")
+                }
             }).catch((error) => {
                 console.log(error);
             });

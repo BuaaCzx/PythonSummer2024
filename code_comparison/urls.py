@@ -17,9 +17,10 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from . import views
-from .views import CodeComparisonView, code_comparison_history
+from .views import CodeComparisonView, code_comparison_history, api_logout
 
 urlpatterns = [
     path('api/comparison/', CodeComparisonView.as_view(), name='code_comparison'),
     path('api/history/', code_comparison_history, name='code_comparison_history'),
+    path('api/logout', api_logout, name='api_logout'),
 ]

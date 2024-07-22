@@ -70,12 +70,16 @@ export default {
     },
     methods: {
         logout() {
-            alert("logout!");
+            alert("logout at static");
             let that = this;
-            axios.get("/logout", {
+            axios.get("/api/logout/", {
                 params: {}
             }).then((response) => {
-                console.log(that);
+                console.log(response.text);
+                if (data.status === 'success') {
+                    // 处理注销成功后的逻辑，例如重定向到登录页面
+                    window.location.href = '/users/login/';
+                }
             }).catch((error) => {
                 console.log(error);
             });

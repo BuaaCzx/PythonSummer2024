@@ -3,6 +3,7 @@ from datetime import datetime
 from html import escape
 
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import logout
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.utils.decorators import method_decorator
@@ -114,6 +115,14 @@ def code_comparison_history(request):
     # 按时间从最近的到最远的顺序排序
     history_list.sort(key=lambda x: x['created_at'], reverse=True)
     return JsonResponse({'history': history_list})
+
+
+@login_required
+@require_http_methods(["GET"])
+def api_logout(request):
+    # 注销用户
+    logout(request)
+    return JsonResponse({'status': 200, 'logout': True})
 
 
 def get_dif(text1, text2):
