@@ -108,8 +108,11 @@ def code_comparison_history(request):
             'file1': history.file1,
             'file2': history.file2,
             'similarity_ratio': history.similarity_ratio,
-            'created_at': history.created_at
+            'created_at': history.created_at,
+            'diff_content': history.diff_content,
         })
+    # 按时间从最近的到最远的顺序排序
+    history_list.sort(key=lambda x: x['created_at'], reverse=True)
     return JsonResponse({'history': history_list})
 
 
