@@ -32,9 +32,7 @@ export default {
                     </div>
                     <li v-for="item in navLinks" :key="item.id" class="nav-item">
                         <a :href="item.link" :class="['nav-link', now == item.title ? 'active' : 'link-dark']" aria-current="page">
-<!--                            <svg class="bi me-2" width="16" height="16">-->
-<!--                                <use xlink:href="#home"/>-->
-<!--                            </svg>-->
+
                             <i :class="['bi', item.icon] "></i>
                             &nbsp{{item.title}}
                         </a>
@@ -61,16 +59,17 @@ export default {
                 },
                 {
                     id: 2,
-                    title: "历史记录",
-                    link: "/history",
-                    icon:"bi-clock-history"
+                    title: "分组检测",
+                    link: "/group",
+                    icon:"bi-bag-dash"
                 },
                 {
                     id: 3,
-                    title: "分组查询",
-                    link: "/group",
-                    icon:"bi-group"
+                    title: "历史记录",
+                    link: "/history",
+                    icon:"bi-clock-history"
                 }
+
             ]
         }
     },

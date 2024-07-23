@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>关系图示例</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+    <style>
+        #main {
+            width: 600px;
+            height: 400px;
+        }
+    </style>
+</head>
+<body>
+    <div id="main"></div>
+    <script>
+        // 初始化 ECharts 实例
+        var myChart = echarts.init(document.getElementById('main'));
+
+        // 配置关系图
+        var option = {
+            title: {
+                text: '关系图示例'
+            },
+            tooltip: {},
+            series: [
+                {
+                    type: 'graph',
+                    layout: 'force',
+                    roam: true,
+                    label: {
+                        show: true
+                    },
+                    data: [
+                        {name: '节点1', symbolSize: 50},
+                        {name: '节点2', symbolSize: 30},
+                        {name: '节点3', symbolSize: 40},
+                        {name: '节点4', symbolSize: 20}
+                    ],
+                    links: [
+                        {source: '节点1', target: '节点2'},
+                        {source: '节点2', target: '节点3'},
+                        {source: '节点3', target: '节点4'},
+                        {source: '节点4', target: '节点1'}
+                    ],
+                    force: {
+                        repulsion: 1000
+                    }
+                }
+            ]
+        };
+
+        // 使用配置项
+        myChart.setOption(option);
+    </script>
+</body>
+</html>

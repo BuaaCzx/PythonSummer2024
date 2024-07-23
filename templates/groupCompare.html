@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh">
 <head>
     <meta charset="UTF-8">
     <title>分组检测</title>
@@ -56,6 +56,9 @@
 <body>
 <div id="app" class="container-fluid"></div>
 
+<!-- Modal -->
+
+
 <script type="module">
     import { createApp } from 'vue';
     import sideBar from "../static/js/sideBar.js";
@@ -79,15 +82,11 @@
         data() {
             return {
                 now: "分组检测",
-                uploadedFiles: [],
-                fileContents: [],
-                selectedFileIndex: null,
-                standardFileIndex: 0,
-                plagiarizedFiles: [],
-                results_similarity: [],
-                results_name: [],
-                results_diffs: [],
+                results: [],
+                graphData: [],
                 showModal: false,
+                modalSourceCode: '',
+                modalTargetCode: ''
             };
         },
         methods: {
@@ -102,13 +101,10 @@
 
                     axios.post('/api/comparison/', formData)
                         .then(response => {
-                            this.results_similarity = response.data.results.map(result => result.similarity_ratio);
-                            this.results_name = response.data.results.map(result => result.file_name);
-                            this.results_diffs = response.data.results.map(result => result.diff_content);
-                            console.log(this.results_diffs);
-                            this.uploadedFiles = Array.from(files);
-                            this.plagiarizedFiles = [];
-                            this.readFileContents();
+                            this.results = response.data.result;
+                            console.log(this.results);
+                            this.graphData = this.generateGraphData();
+                            console.log(this.graphData);
                             this.updateChart();
                         })
                         .catch(error => {
@@ -117,169 +113,131 @@
                 }
             },
 
-            readFileContents() {
-                const order = this.results_name;
-                console.log(order);
-                this.fileContents = [];
-                this.standardFileIndex = 0;
-                const readerStd = new FileReader();
-                readerStd.onload = (event) => {
-                    // 获取文件内容
-                    const fileContent = event.target.result;
-                    this.fileContents.push(event.target.result);
-                    console.log('文件内容:', fileContent);
-                };
-                const file = this.uploadedFiles[0];
-                if (file) {
-                    readerStd.readAsText(file);
-                } else {
-                    console.error('没有找到索引为 0 的文件。');
-                }
-                order.forEach((fileName, index) => {
-                    for(let i = 1; i < this.uploadedFiles.length; i++) {
-                        const thisName = this.uploadedFiles[i].name;
-                        if(thisName === fileName) {
-                            const reader = new FileReader();
-                            reader.onload = (event) => {
-                                this.fileContents.push(event.target.result);
-                            };
-                            reader.readAsText(this.uploadedFiles[i])
-                            break;
+            generateGraphData() {
+                const nodes = [];
+                const links = [];
+                const categories = [];
+                const results = this.results;
+                for (let i = 0; i < results.length; i++) {
+                    // 处理分类
+                    categories.push({
+                        name: `Category ${i + 1}`
+                    });
+                    const len = results[i].file_names.length;
+                    const result_name = results[i].file_names;
+                    const result_content = results[i].file_contents;
+                    // 处理节点
+                    for (let j = 0; j < len; j++) {
+                        nodes.push({
+                            name: result_name[j],
+                            symbolSize: len * 8,
+                            category: i,
+                            content: result_content[j]
+                        });
+                    }
+                    // 处理边
+                    for (let j = 0; j < len; j++) {
+                        for (let k = j + 1; k < len; k++) {
+                            links.push({
+                                source: result_name[j],
+                                target: result_name[k]
+                            });
                         }
                     }
-                });
+                }
+                return { nodes, links, categories };
             },
 
-            downloadFile(fileIndex) {
-                const file = this.uploadedFiles[fileIndex];
-                const blob = new Blob([this.fileContents[fileIndex]], { type: "text/plain" });
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement("a");
-                a.style.display = "none";
-                a.href = url;
-                a.download = file.name;
-                document.body.appendChild(a);
-                a.click();
-                window.URL.revokeObjectURL(url);
-                document.body.removeChild(a);
-            },
-            markAsPlagiarized(fileIndex) {
-                if (!this.plagiarizedFiles.includes(fileIndex)) {
-                    this.plagiarizedFiles.push(fileIndex);
-                }
-                this.updateChart();
-            },
-            markAsNotPlagiarized(fileIndex) {
-                if (this.plagiarizedFiles.includes(fileIndex)) {
-                    this.plagiarizedFiles = this.plagiarizedFiles.filter(index => index !== fileIndex);
-                }
-                this.updateChart();
-            },
-            exportPlagiarizedFiles() {
-                const zip = new JSZip();
-                this.plagiarizedFiles.forEach(index => {
-                    zip.file(this.uploadedFiles[index].name, this.fileContents[index]);
-                });
-                zip.generateAsync({ type: 'blob' }).then(content => {
-                    saveAs(content, 'plagiarized_files.zip');
-                });
-            },
             updateChart() {
-                var fileNames = Array.from(this.results_name);
-                var firstFileName = this.uploadedFiles[0].name;
-                var similarity = Array.from(this.results_similarity);
+                const chartContainer = document.getElementById('chart1');
+                if (chartContainer) {
+                    var myChart = echarts.init(chartContainer, 'vintage');
+                    const { graphData } = this;
 
-                // 计算图表容器的高度
-                var containerHeight = Math.max(330, fileNames.length * 50); // Adjust height per file item
-
-                // 更新图表容器的高度
-                document.getElementById('chart1').style.height = containerHeight + 'px';
-
-                var myChart = echarts.init(document.getElementById('chart1'), 'vintage');
-
-                var colors = [
-                    "#d87c7c",
-                    "#919e8b",
-                    "#d7ab82",
-                    "#6e7074",
-                    "#61a0a8",
-                    "#efa18d",
-                    "#787464",
-                    "#cc7e63",
-                    "#724e58",
-                    "#4b565b"
-                ];
-
-                var option = {
-                    title: {
-                        text: `Standard: ${firstFileName}`,
-                    },
-                    tooltip: {},
-                    yAxis: {
-                        data: fileNames,
-                        axisLabel: {
-                            margin: 10,
-                            fontSize: 15
-                        }
-                    },
-                    xAxis: {
-                        type: 'value',
-                        axisLabel: {
-                            formatter: '{value}',
+                    const option = {
+                        title: {
+                            text: '分组检测图',
+                            top: 'top',
+                            left: 'left'
                         },
-                        axisLine: {
-                            onZero: false,
-                        },
-                    },
-                    grid: {
-                        top: 50,
-                        bottom: 100,
-                        left: 240,
-                        right: 50
-                    },
-                    series: [{
-                        name: 'Percentage',
-                        type: 'bar',
-                        data: similarity,
-                        barWidth: 30,
-                        barCategoryGap: '20%',
-                        barGap: '10%',
-                        itemStyle: {
-                            normal: {
-                                color: function(params) {
-                                    return colors[params.dataIndex % colors.length];
+                        tooltip: {},
+                        legend: [
+                            {
+                                data: graphData.categories.map(a => a.name)
+                            }
+                        ],
+                        animationDuration: 1500,
+                        animationEasingUpdate: 'quinticInOut',
+                        series: [
+                            {
+                                name: '分组检测',
+                                type: 'graph',
+                                layout: 'force',
+                                data: graphData.nodes,
+                                links: graphData.links,
+                                categories: graphData.categories,
+                                roam: true,
+                                label: {
+                                    show: true,
+                                    position: 'right',
+                                    formatter: '{b}'
+                                },
+                                lineStyle: {
+                                    color: 'source',
+                                    curveness: 0.3
+                                },
+                                emphasis: {
+                                    focus: 'adjacency',
+                                    lineStyle: {
+                                        width: 10
+                                    }
+                                },
+                                force: {
+                                    repulsion: 200,
+                                    edgeLength: [50, 150]
                                 }
                             }
-                        },
-                        label: {
-                            show: true,
-                            position: 'right',
-                            formatter: function(params) {
-                                return this.plagiarizedFiles.includes(params.dataIndex + 1) ? '✗' : '✓';
-                            }.bind(this),
-                            textStyle: {
-                                fontSize: 22,
-                                color: 'black',
+                        ]
+                    };
+
+                    myChart.setOption(option);
+
+                    // Event listener for edge clicks
+                    myChart.on('click', (params) => {
+                        if (params.componentType === 'series' && params.seriesType === 'graph' && params.dataType === 'edge') {
+                            const { data } = params;
+                            const sourceNode = graphData.nodes.find(node => node.name === data.source);
+                            const targetNode = graphData.nodes.find(node => node.name === data.target);
+                            if (sourceNode && targetNode) {
+                                this.modalSourceCode = sourceNode.content;
+                                this.modalTargetCode = targetNode.content;
+                                this.showModal = true;
+                                // Trigger modal display manually
+                                const modalElement = document.getElementById('codeModal');
+                                if (modalElement) {
+                                    const modal = new bootstrap.Modal(modalElement);
+                                    modal.show();
+                                }
+                                // console.log(this.modalSourceCode);
+                                // console.log(this.modalTargetCode);
                             }
-                        },
-                    }],
-                };
-
-                myChart.setOption(option);
-
-                myChart.on('click', (params) => {
-                    this.selectedFileIndex = params.dataIndex + 1;
-                    this.showModal = true;
-                });
-                myChart.resize(); // Ensure chart resizes properly
+                        }
+                    });
+                } else {
+                    console.error("Chart container not found!");
+                }
             },
 
             closeModal() {
                 this.showModal = false;
+                const modalElement = document.getElementById('codeModal');
+                if (modalElement) {
+                    const modal = bootstrap.Modal.getInstance(modalElement);
+                    if (modal) modal.hide();
+                }
             },
 
             handleBackdropClick(event) {
-                // Ensure click events on the backdrop are processed correctly
                 if (event.target.classList.contains('modal-backdrop')) {
                     this.closeModal();
                 }
@@ -287,76 +245,45 @@
         },
         mounted() {
             Prism.highlightAll();
-
-            // Add event listener for backdrop click
             document.addEventListener('click', this.handleBackdropClick);
         },
         beforeUnmount() {
-            // Remove event listener for backdrop click
             document.removeEventListener('click', this.handleBackdropClick);
-        },
-        watch: {
-            selectedFileIndex(newValue) {
-                if (newValue !== null && newValue !== this.standardFileIndex) {
-                }
-            }
         },
         computed: {
             showExportButton() {
-                return this.plagiarizedFiles.length > 0;
+                return this.results.length > 0;
             }
         },
         template: `
             <div class="d-flex flex-row" style="margin-left: clamp(200px, 20vw, 20vw); padding: 15px;">
-                <!-- 左侧 sidebar -->
                 <side-bar :now="now"></side-bar>
-
-                <!-- 右侧内容 -->
                 <div style="flex-grow: 1; display: flex; flex-direction: column; padding: 20px;">
                     <div class="navbar d-flex justify-content-between align-items-center">
-                        <h1 style="margin-bottom: 0;">代码上传和显示示例</h1>
+                        <h1 style="margin-bottom: 0;">分组查询</h1>
                         <button type="button" class="btn btn-dark" onclick="document.getElementById('fileInput').click();">上传文件</button>
                         <input type="file" id="fileInput" accept=".txt,.py,.js,.html,.css" multiple hidden ref="fileInput" @change="handleFileChange">
                     </div>
-                    <hr>
-
-                    <!-- 图表区域 -->
                     <div id="chart1" style="width: 100%; height: 560px; margin-top: 20px; overflow-y: auto;"></div>
-                    <div style="margin-top: 20px;" v-if="showExportButton">
-                        <button type="button" class="btn btn-primary" @click="exportPlagiarizedFiles">导出被标记为抄袭的文件</button>
-                    </div>
                 </div>
             </div>
-
-            <!-- 模态框 -->
-            <div v-if="showModal">
-                <div class="modal-backdrop" @click="handleBackdropClick"></div>
-                <div class="modal" tabindex="-1" style="display: block;">
-                    <div class="modal-dialog modal-lg">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title">{% verbatim %} {{ results_name[selectedFileIndex - 1] }} {% endverbatim %}</h5>
-                                <span v-if="plagiarizedFiles.includes(selectedFileIndex)" style="color: red; font-size: 0.8em;">（抄袭）</span>
-                                <span v-else style="color: green; font-size: 0.8em;">（非抄袭）</span>
-                                <button type="button" class="btn-close" @click="closeModal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body d-flex">
-                                <!-- 左侧显示标准文件 -->
-                                <div style="flex: 4; padding-right: 10px;">
-                                    <h6>标准文件代码</h6>
-                                    <pre class="language-python" style="max-height: 400px; overflow-x: auto; overflow-y: auto; white-space: pre-wrap;" v-highlight><code>{% verbatim %}{{ fileContents[standardFileIndex] }}{% endverbatim %}</code></pre>
+            <div class="modal fade" id="codeModal" tabindex="-1" aria-labelledby="codeModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="codeModalLabel">代码展示</h5>
+                            <button type="button" class="btn-close" aria-label="Close" @click="closeModal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col">
+                                    <h6>Source Code</h6>
+                                    <pre><code class="language-python" v-highlight v-html="modalSourceCode"></code></pre>
                                 </div>
-                                <!-- 右侧显示选择的文件 -->
-                                <div style="flex: 6; padding-left: 10px;">
-                                    <h6>选择文件代码</h6>
-                                    <pre class="language-python" style="max-height: 400px; overflow-x: auto; overflow: auto; white-space: pre-wrap;" v-highlight><code v-if="selectedFileIndex !== null">{% verbatim %}{{ fileContents[selectedFileIndex] }}{% endverbatim %}</code></pre>
-                                    <pre class="language-python" style="max-height: 400px; overflow-x: auto; overflow: auto; white-space: pre-wrap;" v-highlight><code v-if="selectedFileIndex !== null">{% verbatim %}{{ results_diffs[selectedFileIndex - 1] }}{% endverbatim %}</code></pre>
+                                <div class="col">
+                                    <h6>Target Code</h6>
+                                    <pre><code class="language-python" v-highlight v-html="modalTargetCode"></code></pre>
                                 </div>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-primary" @click="downloadFile(standardFileIndex)">下载标准文件</button>
-                                <button type="button" class="btn btn-danger" @click="markAsPlagiarized(selectedFileIndex)">标记为抄袭</button>
-                                <button type="button" class="btn btn-success" @click="markAsNotPlagiarized(selectedFileIndex)">标记为未抄袭</button>
                             </div>
                         </div>
                     </div>
