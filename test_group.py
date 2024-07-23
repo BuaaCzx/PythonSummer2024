@@ -12,8 +12,9 @@ url = 'http://127.0.0.1:8000/api/comparison/'
 
 files = []
 for file in os.listdir('test_codes'):
-    file_path = f'test_codes/{file}'
-    files.append(('files', (file, open(file_path, 'rb'), 'application/octet-stream')))
+    if file.endswith('.py'):
+        file_path = f'test_codes/{file}'
+        files.append(('files', (file, open(file_path, 'rb'), 'application/octet-stream')))
 
 data = {
     'comparison_type': 'group',

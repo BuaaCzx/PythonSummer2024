@@ -33,8 +33,6 @@ class CodeComparisonView(View):
     def single_to_multiple_comparison(self, request):
         files = request.FILES.getlist('files')
 
-
-
         if len(files) < 2:
             return JsonResponse({'error': 'At least two files are required.'}, status=400)
 
@@ -75,7 +73,7 @@ class CodeComparisonView(View):
         # print(request.FILES)
         # print(request.POST)
         files = request.FILES.getlist('files')
-        result = []
+        groups = []
 
         # print(files)
         # print(len(files))
@@ -112,16 +110,46 @@ class CodeComparisonView(View):
                 used_indices.add(i)
 
         for group in plagiarism_groups:
-            result.append({
-                'file_names': [files[i].name for i in group],
-                'file_contents': [files[i].read().decode('utf-8') for i in group]
+            group_info = [{'file_id': i, 'file_name': files[i].name, 'file_content': files[i].read().decode('utf-8')} for i in group]
+            groups.append({
+                'group_info': group_info
             })
-        #     print(group[0])
-        #     print(files[group[0]].read().decode('utf-8'))
-        #
-        # print(result)
 
-        return JsonResponse({'result': result})
+        # 新建一个二维矩阵matrix, matrix[i][j]里存放文件i和文件j的json文件比较信息
+        matrix = [[None for _ in range(len(files))] for _ in range(len(files))]
+
+        print(len(files))
+
+        for i in range(len(files)):
+            for j in range(len(files)):
+                # print(i, j)
+                files[i].seek(0)
+                files[j].seek(0)
+                file1_content = files[i].read().decode('utf-8')
+                file2_content = files[j].read().decode('utf-8')
+                # print(file1_content)
+                # print(file2_content)
+                if i != j:
+                    ratio = difflib.SequenceMatcher(None, file1_content, file2_content).quick_ratio()
+                    matrix[i][j] = {
+                        'file1_name': files[i].name,
+                        'file2_name': files[j].name,
+                        'file1': file1_content,
+                        'file2': file2_content,
+                        'similarity_ratio': ratio,
+                        'diff_content': get_dif2(file1_content, file2_content),
+                    }
+                else:
+                    matrix[i][j] = {
+                        'file1_name': files[i].name,
+                        'file2_name': files[j].name,
+                        'file1': file1_content,
+                        'file2': file2_content,
+                        'similarity_ratio': 1.0,
+                        'diff_content': '',
+                    }
+
+        return JsonResponse({'groups': groups, 'matrix': matrix})
 
 
 @login_required
@@ -162,6 +190,18 @@ def get_dif(text1, text2):
     # diff_result = differ.compare(lines1, lines2)
     # diff_content = '\n'.join(diff_result)
     diff_content = differ.make_table(lines1, lines2, fromdesc='Standard', todesc='Submitted')
+    return diff_content
+
+
+def get_dif2(text1, text2):
+    lines1 = text1.splitlines()
+    lines2 = text2.splitlines()
+    differ = difflib.Differ()
+    # differ = difflib.HtmlDiff()
+    diff_result = differ.compare(lines1, lines2)
+    diff_content = '\n'.join(diff_result)
+    # diff_content = differ.make_table(lines1, lines2, fromdesc='Standard', todesc='Submitted')
+    # print(diff_content)
     return diff_content
 
 
