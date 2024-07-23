@@ -20,6 +20,7 @@ from . import views
 from .views import CodeComparisonView, code_comparison_history, api_logout
 
 urlpatterns = [
+    path('api/group/', CodeComparisonView.as_view(), name='group_comparison'),
     path('api/comparison/', CodeComparisonView.as_view(), name='code_comparison'),
     path('api/history/', code_comparison_history, name='code_comparison_history'),
     path('api/logout/', api_logout, name='api_logout'),

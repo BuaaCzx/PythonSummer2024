@@ -19,9 +19,10 @@ from code_comparison.models import CodeComparisonHistory
 @method_decorator(csrf_exempt, name='dispatch')
 class CodeComparisonView(View):
     def post(self, request, *args, **kwargs):
-        # print('receive post')
+        print('receive post')
         # 根据请求中的参数决定执行哪种比较，默认为一对多
         comparison_type = request.POST.get('comparison_type', 'single_to_multiple')
+        print(comparison_type)
         if comparison_type == 'single_to_multiple':
             return self.single_to_multiple_comparison(request)
         elif comparison_type == 'group':

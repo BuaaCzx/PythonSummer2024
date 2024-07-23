@@ -64,6 +64,12 @@ export default {
                     title: "历史记录",
                     link: "/history",
                     icon:"bi-clock-history"
+                },
+                {
+                    id: 3,
+                    title: "分组查询",
+                    link: "/group",
+                    icon:"bi-group"
                 }
             ]
         }
