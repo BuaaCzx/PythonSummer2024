@@ -101,10 +101,8 @@
 
                     axios.post('/api/comparison/', formData)
                         .then(response => {
-                            this.results = response.data.result;
-                            console.log(this.results);
+                            this.results = response.data.groups
                             this.graphData = this.generateGraphData();
-                            console.log(this.graphData);
                             this.updateChart();
                         })
                         .catch(error => {
@@ -123,24 +121,23 @@
                     categories.push({
                         name: `Category ${i + 1}`
                     });
-                    const len = results[i].file_names.length;
-                    const result_name = results[i].file_names;
-                    const result_content = results[i].file_contents;
+                    const len = results[i].group_info.length
+                    const info = results[i].group_info;
                     // 处理节点
                     for (let j = 0; j < len; j++) {
                         nodes.push({
-                            name: result_name[j],
+                            name: info[j].file_name,
                             symbolSize: len * 8,
                             category: i,
-                            content: result_content[j]
+                            content: info[j].file_content,
                         });
                     }
                     // 处理边
                     for (let j = 0; j < len; j++) {
                         for (let k = j + 1; k < len; k++) {
                             links.push({
-                                source: result_name[j],
-                                target: result_name[k]
+                                source: info[j].file_name,
+                                target: info[k].file_name,
                             });
                         }
                     }
