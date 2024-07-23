@@ -25,4 +25,5 @@ urlpatterns = [
     path('', include('code_comparison.urls')),
     path('check/', views.code_check, name='code_check'),
     path('history/', views.history, name='history'),
+    path('group/', views.group_check, name='group_check'),
 ]

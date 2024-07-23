@@ -14,3 +14,7 @@ def code_check(request):
 @login_required(login_url='/users/login/')
 def history(request):
     return render(request, 'history.html')
+
+
+def group_check(request):
+    return render(request, 'groupCompare.html')
