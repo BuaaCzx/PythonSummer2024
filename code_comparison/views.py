@@ -13,16 +13,18 @@ from django.views.decorators.http import require_http_methods
 
 from code_comparison.models import CodeComparisonHistory
 
+from . import ast_check
+
 
 # 这行要加，等登录登出功能实现完善之后再加上，并且如果未登录时接收到请求，返回一个错误码
 # @login_required
 @method_decorator(csrf_exempt, name='dispatch')
 class CodeComparisonView(View):
     def post(self, request, *args, **kwargs):
-        print('receive post')
+        # print('receive post')
         # 根据请求中的参数决定执行哪种比较，默认为一对多
         comparison_type = request.POST.get('comparison_type', 'single_to_multiple')
-        print(comparison_type)
+        # print(comparison_type)
         if comparison_type == 'single_to_multiple':
             return self.single_to_multiple_comparison(request)
         elif comparison_type == 'group':
@@ -32,6 +34,7 @@ class CodeComparisonView(View):
 
     def single_to_multiple_comparison(self, request):
         files = request.FILES.getlist('files')
+        check_option = request.POST.get('check_option', 'normal')
 
         if len(files) < 2:
             return JsonResponse({'error': 'At least two files are required.'}, status=400)
@@ -43,7 +46,11 @@ class CodeComparisonView(View):
 
         for file in files[1:]:
             file_content = file.read().decode('utf-8')
-            ratio = difflib.SequenceMatcher(None, std_content, file_content).quick_ratio()
+
+            if check_option == 'normal':
+                ratio = difflib.SequenceMatcher(None, std_content, file_content).quick_ratio()
+            else:
+                ratio = ast_check.calc(std_content, file_content)
 
             diff_content = get_dif(std_content, file_content)
 
@@ -73,6 +80,7 @@ class CodeComparisonView(View):
         # print(request.FILES)
         # print(request.POST)
         files = request.FILES.getlist('files')
+        check_option = request.POST.get('check_option', 'normal')
         groups = []
 
         # print(files)
@@ -80,7 +88,7 @@ class CodeComparisonView(View):
 
         if len(files) < 2:
             return JsonResponse({'error': 'At least two files are required for pairwise comparison.'}, status=400)
-        threshold = 0.8
+        threshold = request.POST.get('threshold', 0.8) # 阈值
         plagiarism_groups = []
         used_indices = set()
 
@@ -100,7 +108,11 @@ class CodeComparisonView(View):
                     continue
                 file2_content = files[j].read().decode('utf-8')
                 files[j].seek(0)
-                ratio = difflib.SequenceMatcher(None, file_content, file2_content).quick_ratio()
+
+                if check_option == 'normal':
+                    ratio = difflib.SequenceMatcher(None, file_content, file2_content).quick_ratio()
+                else:
+                    ratio = ast_check.calc(file_content, file2_content)
                 if ratio > threshold:
                     plagiarism_group.append(j)
                     used_indices.add(j)
