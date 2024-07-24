@@ -34,7 +34,7 @@ class CodeComparisonView(View):
 
     def single_to_multiple_comparison(self, request):
         files = request.FILES.getlist('files')
-        check_option = request.POST.get('check_option', 'normal')
+        check_option = request.POST.get('check_option', 'ast')
 
         if len(files) < 2:
             return JsonResponse({'error': 'At least two files are required.'}, status=400)
@@ -50,7 +50,11 @@ class CodeComparisonView(View):
             if check_option == 'normal':
                 ratio = difflib.SequenceMatcher(None, std_content, file_content).quick_ratio()
             else:
-                ratio = ast_check.calc(std_content, file_content)
+                try:
+                    ratio = ast_check.calc(std_content, file_content)
+                except Exception as e:
+                    # print("python file error: ", e)
+                    return JsonResponse({'error': 'python file ' + file.name + ' has error.'}, status=400)
 
             diff_content = get_dif(std_content, file_content)
 
@@ -112,7 +116,10 @@ class CodeComparisonView(View):
                 if check_option == 'normal':
                     ratio = difflib.SequenceMatcher(None, file_content, file2_content).quick_ratio()
                 else:
-                    ratio = ast_check.calc(file_content, file2_content)
+                    try:
+                        ratio = ast_check.calc(file_content, file2_content)
+                    except Exception as e:
+                        return JsonResponse({'error': 'python file ' + files[j].name + ' has error'}, status=400)
                 if ratio > threshold:
                     plagiarism_group.append(j)
                     used_indices.add(j)

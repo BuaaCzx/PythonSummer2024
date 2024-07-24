@@ -125,8 +125,8 @@ class CalculateSimilarity(object):
         return sum(self.similarity) / len(self.similarity)
 
 
-def calc() -> float:
-    my_ast = CodeParse("print('hello, world!')", "print('hell0 world!')")
+def calc(code1, code2) -> float:
+    my_ast = CodeParse(code1, code2)
     parser = CalculateSimilarity(my_ast.seqA, my_ast.seqB, 1, 1, -1 / 3)
     return parser.calc_similarity()
 
