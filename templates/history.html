@@ -79,11 +79,12 @@
         },
         methods:{
             rateClassify: function (item) {
-                return item.similarity_ratio > DANGEROUS ? '疑似抄袭' : '正常';
+                let threshold = item.threshold === undefined ? DANGEROUS : item.threshold;
+                return item.similarity_ratio > threshold ? '疑似抄袭' : '正常';
             }
         },
         template: `
-        <div class='d-flex flex-row' style="margin-left: 20vw; padding: 15px;">
+        <div class='d-flex flex-row' style="margin-left: clamp(200px, 20vw, 20vw); padding: 15px;">
             <side-bar :now='now'></side-bar>
             <div style="flex-grow: 1; padding: 20px;">
                 <br>
@@ -92,7 +93,7 @@
                     <li v-for='item in historyData' class='list-group-item d-flex justify-content-between align-items-start'>
                         <div class='ms-2 me-auto'>
                             <div class='fw-bold'><a :href="historyRoute+item.id.toString()">bold标题文字 {{item.title}}</a></div>
-                            底部解释说明文字 {{item.content}}
+                            底部解释说明文字 {{item.description}}
                         </div>
                         <span :class='["badge",rateClassify(item)=="正常"?"bg-success":"bg-danger","rounded-pill"]'>{{rateClassify(item)}}</span>
                     </li>
