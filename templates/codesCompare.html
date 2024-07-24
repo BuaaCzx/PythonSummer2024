@@ -16,7 +16,6 @@
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.3/dist/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="../static/js/echarts.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/echarts/theme/vintage.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.0/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.25.0/themes/prism-okaidia.min.css" rel="stylesheet">
@@ -195,7 +194,7 @@
                 // 更新图表容器的高度
                 document.getElementById('chart1').style.height = containerHeight + 'px';
 
-                var myChart = echarts.init(document.getElementById('chart1'), 'vintage');
+                var myChart = echarts.init(document.getElementById('chart1'));
 
                 var colors = [
                     "#d87c7c",
@@ -224,6 +223,8 @@
                     },
                     xAxis: {
                         type: 'value',
+                        min: 0, // 固定 x 轴的最小值为 0
+                        max: 1, // 固定 x 轴的最大值为 1
                         axisLabel: {
                             formatter: '{value}',
                         },

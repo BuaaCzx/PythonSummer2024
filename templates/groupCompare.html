@@ -16,8 +16,6 @@
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.3/dist/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="../static/js/echarts.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/echarts/theme/vintage.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.0/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.25.0/themes/prism-okaidia.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.25.0/prism.min.js"></script>
@@ -56,9 +54,6 @@
 <body>
 <div id="app" class="container-fluid"></div>
 
-<!-- Modal -->
-
-
 <script type="module">
     import { createApp } from 'vue';
     import sideBar from "../static/js/sideBar.js";
@@ -86,13 +81,15 @@
                 graphData: [],
                 showModal: false,
                 modalSourceCode: '',
-                modalTargetCode: ''
+                modalTargetCode: '',
+                showChart: false // 用来控制图表的显示
             };
         },
         methods: {
             handleFileChange(event) {
                 const files = event.target.files;
                 if (files && files.length > 0) {
+                    this.showChart = false; // 上传文件时先隐藏图表
                     const formData = new FormData();
                     for (let i = 0; i < files.length; i++) {
                         formData.append('files', files[i]);
@@ -101,9 +98,10 @@
 
                     axios.post('/api/comparison/', formData)
                         .then(response => {
-                            this.results = response.data.groups
+                            this.results = response.data.groups;
                             this.graphData = this.generateGraphData();
-                            this.updateChart();
+
+                            this.checkForPlagiarism(); // Check for plagiarism after updating results
                         })
                         .catch(error => {
                             console.error('Error uploading files:', error);
@@ -111,19 +109,40 @@
                 }
             },
 
+            checkForPlagiarism() {
+                if (this.results.length === 0) {
+                    // 清除图表内容
+                    const chartContainer = document.getElementById('chart1');
+                    if (chartContainer) {
+                        var myChart = echarts.getInstanceByDom(chartContainer);
+                        if (myChart) {
+                            myChart.clear(); // 清除图表内容
+                        }
+                    }
+
+                    const modalElement = document.getElementById('noPlagiarismModal');
+                    if (modalElement) {
+                        const modal = new bootstrap.Modal(modalElement);
+                        modal.show();
+                    }
+                } else {
+                    this.showChart = true; // 如果有结果则显示图表
+                    this.updateChart();
+                }
+            },
+
+
             generateGraphData() {
                 const nodes = [];
                 const links = [];
                 const categories = [];
                 const results = this.results;
                 for (let i = 0; i < results.length; i++) {
-                    // 处理分类
                     categories.push({
                         name: `Category ${i + 1}`
                     });
                     const len = results[i].group_info.length
                     const info = results[i].group_info;
-                    // 处理节点
                     for (let j = 0; j < len; j++) {
                         nodes.push({
                             name: info[j].file_name,
@@ -132,7 +151,6 @@
                             content: info[j].file_content,
                         });
                     }
-                    // 处理边
                     for (let j = 0; j < len; j++) {
                         for (let k = j + 1; k < len; k++) {
                             links.push({
@@ -146,14 +164,14 @@
             },
 
             updateChart() {
+                if (!this.showChart) return; // 如果不需要显示图表，则退出
                 const chartContainer = document.getElementById('chart1');
                 if (chartContainer) {
-                    var myChart = echarts.init(chartContainer, 'vintage');
+                    var myChart = echarts.init(chartContainer);
                     const { graphData } = this;
 
                     const option = {
                         title: {
-                            text: '分组检测图',
                             top: 'top',
                             left: 'left'
                         },
@@ -215,8 +233,13 @@
                                     const modal = new bootstrap.Modal(modalElement);
                                     modal.show();
                                 }
-                                // console.log(this.modalSourceCode);
-                                // console.log(this.modalTargetCode);
+                            }
+                        } else if (params.componentType === 'series' && params.seriesType === 'graph' && params.dataType === 'node') {
+                            const { data } = params;
+                            const node = this.graphData.nodes.find(node => node.name === data.name);
+                            if (node) {
+                                const blob = new Blob([node.content], { type: 'text/plain;charset=utf-8' });
+                                saveAs(blob, `${data.name}`);
                             }
                         }
                     });
@@ -266,6 +289,7 @@
                 </div>
             </div>
 
+            <!-- Code Display Modal -->
             <div class="modal fade" id="codeModal" tabindex="-1" aria-labelledby="codeModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-lg">
                     <div class="modal-content">
@@ -284,6 +308,21 @@
                                     <pre><code class="language-python" v-highlight v-html="modalTargetCode"></code></pre>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- No Plagiarism Modal -->
+            <div class="modal fade" id="noPlagiarismModal" tabindex="-1" aria-labelledby="noPlagiarismModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-sm">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="noPlagiarismModalLabel">结果</h5>
+                            <button type="button" class="btn-close" aria-label="Close" @click="closeModal"></button>
+                        </div>
+                        <div class="modal-body text-center">
+                            无抄袭行为
                         </div>
                     </div>
                 </div>
