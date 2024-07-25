@@ -88,8 +88,8 @@
 
 button {
     border-radius: 20px;
-    border: 1px solid #ff4b2b;
-    background: #ff4b2b;
+    border: 1px solid #3388ff;
+    background: #3333ff;
     color: #fff;
     font-size: 12px;
     font-weight: bold;
@@ -145,8 +145,8 @@ button.switcher {
 }
 
 .overlay {
-    background: #ff416c;
-    background: linear-gradient(to right, #ff4b2b, #ff416c) no-repeat 0 0 / cover;
+    background: #3488ff;
+    background: linear-gradient(to right, #3388ff, #33ffff) no-repeat 0 0 / cover;
     color: #fff;
     position: relative;
     left: -100%;
