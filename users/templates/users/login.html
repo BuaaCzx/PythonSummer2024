@@ -25,7 +25,7 @@
             "scopes": {}
         }
     </script>
-    <link rel="stylesheet" href="../../static/css/style.css" />
+    <link rel="stylesheet" href="../../static/css/style.css"/>
 </head>
 
 <body>
@@ -37,31 +37,62 @@
         components: {
             sideBar
         },
-        data(){
+        data() {
             return {
-                now:'主页',
-                right_active:true
+                username: '',
+
+                password: '',
+                now: '主页',
+                right_active: true
             }
         },
-        methods:{
+        methods: {
             btnRegisterClick: function () {
                 this.right_active = true;
             },
-            btnLoginClick:function () {
+            btnLoginClick: function () {
                 this.right_active = false;
+            },
+            loginSubmit: function () {
+                var csrftoken = document.getElementsByName('csrfmiddlewaretoken')[0].value;
+                axios.defaults.headers.common['X-CSRFToken'] = csrftoken;
+                console.log(csrftoken);
+                axios.post('/users/login/', {
+                        username: this.username,
+                        'password': this.password,
+                        // 'csrfmiddlewaretoken': csrftoken
+                    }, {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrftoken
+                        }
+                    }
+                )
+                    .then((response) => {
+                        console.log(response);
+                        if (response.data.status === 'success') {
+                            alert("登录成功");
+                            window.location.href = '/';
+                        } else {
+                            alert("用户名或密码错误");
+                        }
+                    })
+                    .catch((error) => {
+                        console.log(error);
+                    });
             }
         },
-        ready(){
+        ready() {
             _ready();
 
         },
-        template:`
+        template: `
 <div class='d-flex flex-row' style="margin-left: clamp(200px, 20vw, 20vw); padding: 15px;">
     <side-bar :now='now'></side-bar>
     <div class="container mt-3">
         <div class="row">
 
-            <div class="col-8 p-5">
+            <div class="col-10 p-5">
                 <div :class="['main',right_active && 'right-panel-active']" id="main">
                     <div class="form-container sign-up-container">
                         <form action="/users/login/" method="POST">
@@ -92,11 +123,11 @@
 <!--                                <a href="" class="social"><i class="fab fa-linkedin-in"></i></a>-->
 <!--                            </div>-->
 <!--                            <span>或使用您的帐号</span>-->
-                            <input type="text" name="username" placeholder="用户名">
-                            <input type="password" name="password" placeholder="密 码">
+                            <input type="text" name="username" placeholder="用户名" v-model="username">
+                            <input type="password" name="password" placeholder="密 码" v-model="password">
                             <a href="#" style="text-decoration:none">忘记密码？</a>
                             <br>
-                            <button id="login">登 录</button>
+                            <button id="login" type="button" @click="loginSubmit">登 录</button>
                         </form>
                     </div>
                     <div class="overlay-container">
@@ -125,7 +156,7 @@
     });
     app.mount("#app");
 </script>
-    <div id="app" class="container-fluid"></div>
+<div id="app" class="container-fluid"></div>
 </body>
 
 </html>
