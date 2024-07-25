@@ -79,13 +79,9 @@
             return {
                 now: "代码重复检测",
                 uploadedFiles: [],
-
                 selectedFileIndex: null,
-                standardFileIndex: 0,
-
-
                 showModal: false,
-                checkOption: 'ast',
+                checkOption: 'normal',
                 results_similarity: [],
                 results_name: [],
                 results_diffs: [],
@@ -97,6 +93,7 @@
                 stdUpLoadedFile: [],
                 stdFileContent: "",
                 fileContents: [],
+                stdFileName: "",
             };
         },
         methods: {
@@ -109,7 +106,6 @@
                                 this.results_name = response.data.results.map(result => result.file_name);
                                 this.results_diffs = response.data.results.map(result => result.diff_content);
                                 this.plagiarizedFiles = [];
-                                // console.log(this.results_name);
                                 this.readStdFileContent();
                                 this.readElsFileContents();
 
@@ -143,6 +139,12 @@
                     this.stdUpLoadedFile = Array.from(file);
                     console.log(this.stdUpLoadedFile);
                     this.isPostStd = true;
+                    this.stdFileName = file[0].name;
+                } else {
+                    if(this.isPostStd) {
+                        this.isPostStd = false;     //如果想要改变std，但是不小心上传多了，就设置为无效
+                        this.stdFileName = "";
+                    }
                 }
             },
             handleFileChange(event) {
@@ -159,22 +161,32 @@
                 }
             },
             resendFilesAndUpdateResults() {
-                if (this.uploadedFiles.length > 0) {
-                    const formData = new FormData();
-                    this.uploadedFiles.forEach(file => {
-                        formData.append('files', file);
+                if (this.elsUpLoadedFiles.length > 0) {
+                    this.elsUpLoadedFiles.forEach(file => {
+                        this.postFormData.append('files', file);
                     });
-                    formData.append('comparison_type', 'single_to_multiple');
-                    formData.append('check_option', this.checkOption); // 使用当前的 checkOption
-                    axios.post('/api/comparison/', formData)
+                    this.postFormData.append('comparison_type', 'single_to_multiple');
+                    this.postFormData.append('check_option', this.checkOption); // 使用当前的 checkOption
+                    axios.post('/api/comparison/', this.postFormData)
                         .then(response => {
-                            this.results_similarity = response.data.results.map(result => result.similarity_ratio);
-                            this.results_name = response.data.results.map(result => result.file_name);
-                            this.results_diffs = response.data.results.map(result => result.diff_content);
-                            this.uploadedFiles = Array.from(files);
-                            this.plagiarizedFiles = [];
-                            this.readFileContents();
-                            this.updateChart();
+                                this.results_similarity = response.data.results.map(result => result.similarity_ratio);
+                                this.results_name = response.data.results.map(result => result.file_name);
+                                this.results_diffs = response.data.results.map(result => result.diff_content);
+                                this.plagiarizedFiles = [];
+                                this.readStdFileContent();
+                                this.readElsFileContents();
+
+                                const newFormData = new FormData();
+                                for (const [key, value] of this.postFormData.entries()) {
+                                    // 只保留不包含 "files" 键的条目
+                                    if (key !== 'files') {
+                                        newFormData.append(key, value);
+                                    }
+                                }
+                                this.postFormData = newFormData;
+                                this.isPostEls = false;
+
+                                this.updateChart();
                         })
                         .catch(error => {
                             console.error('Error uploading files:', error);
@@ -188,7 +200,6 @@
                     const reader = new FileReader();
                     reader.onload = (event) => {
                         this.stdFileContent = event.target.result;
-                        console.log(this.stdFileContent);
                     };
                     reader.readAsText(file); // 传递文件对象给 readAsText 方法
                 } else {
@@ -197,6 +208,7 @@
             },
             readElsFileContents() {
                 const order = this.results_name;
+                console.log(order);
                 this.fileContents = [];
                 order.forEach((fileName, index) => {
                     for(let i = 0; i < this.elsUpLoadedFiles.length; i++) {
@@ -211,12 +223,24 @@
                         }
                     }
                 });
-                console.log(this.fileContents);
             },
 
             downloadFile(fileIndex) {
-                const file = this.uploadedFiles[fileIndex];
+                const file = this.elsUpLoadedFiles[fileIndex];
                 const blob = new Blob([this.fileContents[fileIndex]], { type: "text/plain" });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.style.display = "none";
+                a.href = url;
+                a.download = file.name;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            },
+            downloadStdFile() {
+                const file = this.stdUpLoadedFile[0];
+                const blob = new Blob([this.stdFileContent], { type: "text/plain" });
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement("a");
                 a.style.display = "none";
@@ -241,8 +265,9 @@
             },
             exportPlagiarizedFiles() {
                 const zip = new JSZip();
+                console.log(this.plagiarizedFiles);
                 this.plagiarizedFiles.forEach(index => {
-                    zip.file(this.uploadedFiles[index].name, this.fileContents[index]);
+                    zip.file(this.results_name[index - 1], this.fileContents[index]);
                 });
                 zip.generateAsync({ type: 'blob' }).then(content => {
                     saveAs(content, 'plagiarized_files.zip');
@@ -275,9 +300,6 @@
                 ];
 
                 var option = {
-                    title: {
-                        text: `Standard: ${firstFileName}`,
-                    },
                     tooltip: {},
                     yAxis: {
                         data: fileNames,
@@ -384,8 +406,8 @@
                         <h1 style="margin-bottom: 0;">代码上传和显示示例</h1>
                         <div>
                             <select class="form-select me-2" v-model="checkOption" style="display: inline-block; width: auto;">
-                                    <option value="ast">AST</option>
                                     <option value="normal">Normal</option>
+                                    <option value="ast">AST</option>
                             </select>
                             <button type="button" class="btn btn-info" onclick="document.getElementById('stdfileInput').click();">上传标准文件</button>
                             <input type="file" id="stdfileInput" accept=".txt,.py,.js,.html,.css" multiple hidden ref="stdfileInput" @change="handleStdFileChange">
@@ -395,6 +417,10 @@
                         <button class="btn btn-success mt-2" @click="handleSubmit">提交</button>
                     </div>
                     <hr>
+
+                    <div v-if="stdFileName">
+                         <p>标准文件: {% verbatim %} {{ stdFileName }} {% endverbatim %}</p>
+                    </div>
 
                     <!-- 图表区域 -->
                     <div id="chart1" style="width: 100%; height: 560px; margin-top: 20px; overflow-y: auto;"></div>
@@ -420,17 +446,17 @@
                                 <!-- 左侧显示标准文件 -->
                                 <div style="flex: 4; padding-right: 10px;">
                                     <h6>标准文件代码</h6>
-                                    <pre class="language-python" style="max-height: 400px; overflow-x: auto; overflow-y: auto; white-space: pre-wrap;" v-highlight><code>{% verbatim %}{{ fileContents[standardFileIndex] }}{% endverbatim %}</code></pre>
+                                    <pre class="language-python" style="max-height: 400px; overflow-x: auto; overflow-y: auto; white-space: pre-wrap;" v-highlight v-html="stdFileContent"><code></code></pre>
                                 </div>
                                 <!-- 右侧显示选择的文件 -->
                                 <div style="flex: 6; padding-left: 10px;">
                                     <h6>选择文件代码</h6>
-                                    <pre class="language-python" style="max-height: 400px; overflow-x: auto; overflow: auto; white-space: pre-wrap;" v-highlight><code v-if="selectedFileIndex !== null" v-html="stdFileContent"></code></pre>
+                                    <pre class="language-python" style="max-height: 400px; overflow-x: auto; overflow: auto; white-space: pre-wrap;" v-highlight><code v-if="selectedFileIndex !== null">{% verbatim %}{{ fileContents[selectedFileIndex - 1] }}{% endverbatim %}</code></pre>
                                     <pre class="language-python" style="max-height: 400px; overflow-x: auto; overflow: auto; white-space: pre-wrap;" v-highlight><code v-if="selectedFileIndex !== null">{% verbatim %}{{ results_diffs[selectedFileIndex - 1] }}{% endverbatim %}</code></pre>
                                 </div>
                             </div>
                             <div class="modal-footer">
-                                <button type="button" class="btn btn-primary" @click="downloadFile(standardFileIndex)">下载标准文件</button>
+                                <button type="button" class="btn btn-primary" @click="downloadStdFile()">下载标准文件</button>
                                 <button type="button" class="btn btn-danger" @click="markAsPlagiarized(selectedFileIndex)">标记为抄袭</button>
                                 <button type="button" class="btn btn-success" @click="markAsNotPlagiarized(selectedFileIndex)">标记为未抄袭</button>
                             </div>

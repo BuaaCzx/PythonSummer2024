@@ -85,7 +85,9 @@
                 modalSourceCode: '',
                 modalTargetCode: '',
                 showChart: false,
-                checkOption: 'ast',
+                checkOption: 'normal',
+                submittedValue: 'Shreshold: 80%',
+                threshold: 0.8
             };
         },
         methods: {
@@ -99,7 +101,7 @@
                     }
                     formData.append('comparison_type', 'group');
                     formData.append('check_option', this.checkOption); // 使用当前的 checkOption
-
+                    formData.append('threshold', this.threshold);
                     axios.post('/api/comparison/', formData)
                         .then(response => {
                             this.results = response.data.groups;
@@ -121,7 +123,7 @@
                     });
                     formData.append('comparison_type', 'group');
                     formData.append('check_option', this.checkOption); // 使用当前的 checkOption
-
+                    formData.append('threshold', this.threshold);
                     axios.post('/api/comparison/', formData)
                         .then(response => {
                             // 更新结果数据
@@ -303,8 +305,23 @@
                 if (event.target.classList.contains('modal-backdrop')) {
                     this.closeModal();
                 }
-            }
+            },
+            submitInputValue() {
+                if (this.inputValue.trim() !== '') {
+                    const value = parseFloat(this.inputValue);
+                    console.log(value);
+                    if(!isNaN(value) && value >= 0 && value <= 100) {
+                        this.submittedValue = `Shreshold: ${value}%`;
+                        this.inputValue = ''; // 清空输入框的内容
+                        this.threshold = value / 100;
+                    } else {
+                        this.submittedValue = 'Shreshold: ERR';
+                        this.inputValue = ''; // 清空输入框的内容
+                    }
+                }
+            },
         },
+
         mounted() {
             Prism.highlightAll();
             document.addEventListener('click', this.handleBackdropClick);
@@ -330,21 +347,41 @@
                 <div style="flex-grow: 1; display: flex; flex-direction: column; padding: 20px;">
                     <div class="navbar d-flex justify-content-between align-items-center">
                         <h1 style="margin-bottom: 0;">分组查询</h1>
-                        <div>
-
+                        <div class="d-flex align-items-center">
+                            <form>
+                            <div class="input-group me-2" style="width: auto;">
+                                        <input
+                                            type="text"
+                                            v-model="inputValue"
+                                            class="form-control"
+                                            :placeholder="submittedValue || 'ERROR'"
+                                            style="width: 150px;"
+                                        />
+                                        <button
+                                            type="button"
+                                            class="btn btn-primary"
+                                            @click="submitInputValue"
+                                        >提交</button>
+                            </div>
+                            </form>
                             <select class="form-select me-2" v-model="checkOption" style="display: inline-block; width: auto;">
-                                    <option value="ast">AST</option>
                                     <option value="normal">Normal</option>
+                                    <option value="ast">AST</option>
                             </select>
-
                             <button type="button" class="btn btn-dark" onclick="document.getElementById('fileInput').click();">上传文件</button>
                             <input type="file" id="fileInput" accept=".txt,.py,.js,.html,.css" multiple hidden ref="fileInput" @change="handleFileChange">
+
                         </div>
                     </div>
                     <hr>
+
+
+
                     <div id="chart1" style="width: 100%; height: 560px; margin-top: 20px; overflow-y: auto;"></div>
                 </div>
             </div>
+
+
 
             <!-- Code Display Modal -->
             <div class="modal fade" id="codeModal" tabindex="-1" aria-labelledby="codeModalLabel" aria-hidden="true">
