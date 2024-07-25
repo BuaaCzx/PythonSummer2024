@@ -41,3 +41,4 @@
 | 7.25 16:36  | LPR | 重构codeCompares.html，修改codeCompare逻辑                                                                                                                                           |
 | 7.25 16:58  | czx | 改了下一对多查重的后端接口，适应前端                                                                                                                                                            |
 | 7.25 19:21  | LPR | 对接后端接口、支持手动修改阈值、支持前端显示std、修改下载bug                                                                                                                                             |
+| 7.25 20:33  | WDL | model增加diff_content_html字段，方便历史记录中显示，**可能需要migrate** |
