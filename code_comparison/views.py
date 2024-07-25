@@ -1,6 +1,5 @@
 import difflib
 from datetime import datetime
-from html import escape
 
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
@@ -34,17 +33,14 @@ class CodeComparisonView(View):
 
     def single_to_multiple_comparison(self, request):
         files = request.FILES.getlist('files')                  # 其余文件接口files，标准文件接口stdFile
+        std_file = request.FILES.get('stdFile')
         check_option = request.POST.get('check_option', 'ast')
 
-        if len(files) < 2:
-            return JsonResponse({'error': 'At least two files are required.'}, status=400)
-
-        std_file = files[0]
         std_content = std_file.read().decode('utf-8')
         similarity_results = []
         user = request.user
 
-        for file in files[1:]:
+        for file in files[0:]:
             file_content = file.read().decode('utf-8')
 
             if check_option == 'normal':
@@ -56,7 +52,7 @@ class CodeComparisonView(View):
                     # print("python file error: ", e)
                     return JsonResponse({'error': 'python file ' + file.name + ' has error.'}, status=400)
 
-            diff_content = get_dif(std_content, file_content)
+            diff_content = get_dif2(std_content, file_content)
 
             # 存表
             CodeComparisonHistory.objects.create(
