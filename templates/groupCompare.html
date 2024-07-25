@@ -79,10 +79,13 @@
                 now: "分组检测",
                 results: [],
                 graphData: [],
+                matrix:[],
+                uploadedFiles: [],
                 showModal: false,
                 modalSourceCode: '',
                 modalTargetCode: '',
-                showChart: false // 用来控制图表的显示
+                showChart: false,
+                checkOption: 'ast',
             };
         },
         methods: {
@@ -95,12 +98,36 @@
                         formData.append('files', files[i]);
                     }
                     formData.append('comparison_type', 'group');
+                    formData.append('check_option', this.checkOption); // 使用当前的 checkOption
 
                     axios.post('/api/comparison/', formData)
                         .then(response => {
                             this.results = response.data.groups;
+                            this.matrix = response.data.matrix;
                             this.graphData = this.generateGraphData();
+                            this.uploadedFiles = Array.from(files);
+                            this.checkForPlagiarism(); // Check for plagiarism after updating results
+                        })
+                        .catch(error => {
+                            console.error('Error uploading files:', error);
+                        });
+                }
+            },
+            resendFilesAndUpdateResults() {
+                if (this.uploadedFiles.length > 0) {
+                    const formData = new FormData();
+                    this.uploadedFiles.forEach(file => {
+                        formData.append('files', file);
+                    });
+                    formData.append('comparison_type', 'group');
+                    formData.append('check_option', this.checkOption); // 使用当前的 checkOption
 
+                    axios.post('/api/comparison/', formData)
+                        .then(response => {
+                            // 更新结果数据
+                            this.results = response.data.groups;
+                            this.matrix = response.data.matrix;
+                            this.graphData = this.generateGraphData();
                             this.checkForPlagiarism(); // Check for plagiarism after updating results
                         })
                         .catch(error => {
@@ -146,18 +173,32 @@
                     for (let j = 0; j < len; j++) {
                         nodes.push({
                             name: info[j].file_name,
-                            symbolSize: len * 8,
+                            symbolSize: len * 4,
                             category: i,
                             content: info[j].file_content,
+                            degree: len,
                         });
                     }
                     for (let j = 0; j < len; j++) {
-                        for (let k = j + 1; k < len; k++) {
-                            links.push({
-                                source: info[j].file_name,
-                                target: info[k].file_name,
-                            });
+                        for( let m = 0; m < this.matrix.length; m++) {
+                            if(this.matrix[m][0].file1_name === info[j].file_name) {
+                                const diffs = this.matrix[m];
+                                 for (let k = j + 1; k < len; k++) {
+                                    for(let n = 0; n < diffs.length; n++) {
+                                        if( diffs[n].file2_name == info[k].file_name ) {
+                                            links.push ({
+                                                source: info[j].file_name,
+                                                target: info[k].file_name,
+                                                value: diffs[n].similarity_ratio
+                                            });
+                                        }
+                                    }
+                                }
+                                break;
+                            }
                         }
+
+
                     }
                 }
                 return { nodes, links, categories };
@@ -192,6 +233,7 @@
                                 links: graphData.links,
                                 categories: graphData.categories,
                                 roam: true,
+                                draggable: true,
                                 label: {
                                     show: true,
                                     position: 'right',
@@ -199,17 +241,17 @@
                                 },
                                 lineStyle: {
                                     color: 'source',
-                                    curveness: 0.3
+                                    curveness: 0.2
                                 },
                                 emphasis: {
                                     focus: 'adjacency',
                                     lineStyle: {
-                                        width: 10
+                                        width: 8
                                     }
                                 },
                                 force: {
                                     repulsion: 200,
-                                    edgeLength: [50, 150]
+                                    edgeLength: 150,
                                 }
                             }
                         ]
@@ -270,6 +312,13 @@
         beforeUnmount() {
             document.removeEventListener('click', this.handleBackdropClick);
         },
+        watch:{
+            checkOption(newValue, oldValue) {
+                if(newValue !== oldValue) {
+                    this.resendFilesAndUpdateResults();
+                }
+            }
+        },
         computed: {
             showExportButton() {
                 return this.results.length > 0;
@@ -281,8 +330,16 @@
                 <div style="flex-grow: 1; display: flex; flex-direction: column; padding: 20px;">
                     <div class="navbar d-flex justify-content-between align-items-center">
                         <h1 style="margin-bottom: 0;">分组查询</h1>
-                        <button type="button" class="btn btn-dark" onclick="document.getElementById('fileInput').click();">上传文件</button>
-                        <input type="file" id="fileInput" accept=".txt,.py,.js,.html,.css" multiple hidden ref="fileInput" @change="handleFileChange">
+                        <div>
+
+                            <select class="form-select me-2" v-model="checkOption" style="display: inline-block; width: auto;">
+                                    <option value="ast">AST</option>
+                                    <option value="normal">Normal</option>
+                            </select>
+
+                            <button type="button" class="btn btn-dark" onclick="document.getElementById('fileInput').click();">上传文件</button>
+                            <input type="file" id="fileInput" accept=".txt,.py,.js,.html,.css" multiple hidden ref="fileInput" @change="handleFileChange">
+                        </div>
                     </div>
                     <hr>
                     <div id="chart1" style="width: 100%; height: 560px; margin-top: 20px; overflow-y: auto;"></div>

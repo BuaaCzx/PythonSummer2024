@@ -87,6 +87,7 @@
                 results_name: [],
                 results_diffs: [],
                 showModal: false,
+                checkOption: 'ast',
             };
         },
         methods: {
@@ -98,14 +99,38 @@
                         formData.append('files', files[i]);
                     }
                     formData.append('comparison_type', 'single_to_multiple');
+                    formData.append('check_option', this.checkOption);
 
                     axios.post('/api/comparison/', formData)
                         .then(response => {
                             this.results_similarity = response.data.results.map(result => result.similarity_ratio);
                             this.results_name = response.data.results.map(result => result.file_name);
                             this.results_diffs = response.data.results.map(result => result.diff_content);
-                            console.log(this.results_diffs);
                             this.uploadedFiles = Array.from(files);
+                            this.plagiarizedFiles = [];
+                            this.readFileContents();
+                            this.updateChart();
+                        })
+                        .catch(error => {
+                            console.error('Error uploading files:', error);
+                        });
+                }
+            },
+            resendFilesAndUpdateResults() {
+                if (this.uploadedFiles.length > 0) {
+                    const formData = new FormData();
+                    this.uploadedFiles.forEach(file => {
+                        formData.append('files', file);
+                    });
+                    formData.append('comparison_type', 'single_to_multiple');
+                    formData.append('check_option', this.checkOption); // 使用当前的 checkOption
+
+                    axios.post('/api/comparison/', formData)
+                        .then(response => {
+                            // 更新结果数据
+                            this.results_similarity = response.data.results.map(result => result.similarity_ratio);
+                            this.results_name = response.data.results.map(result => result.file_name);
+                            this.results_diffs = response.data.results.map(result => result.diff_content);
                             this.plagiarizedFiles = [];
                             this.readFileContents();
                             this.updateChart();
@@ -118,7 +143,6 @@
 
             readFileContents() {
                 const order = this.results_name;
-                console.log(order);
                 this.fileContents = [];
                 this.standardFileIndex = 0;
                 const readerStd = new FileReader();
@@ -126,7 +150,6 @@
                     // 获取文件内容
                     const fileContent = event.target.result;
                     this.fileContents.push(event.target.result);
-                    console.log('文件内容:', fileContent);
                 };
                 const file = this.uploadedFiles[0];
                 if (file) {
@@ -235,7 +258,7 @@
                     grid: {
                         top: 50,
                         bottom: 100,
-                        left: 240,
+                        left: 160,
                         right: 50
                     },
                     series: [{
@@ -297,8 +320,9 @@
             document.removeEventListener('click', this.handleBackdropClick);
         },
         watch: {
-            selectedFileIndex(newValue) {
-                if (newValue !== null && newValue !== this.standardFileIndex) {
+            checkOption(newValue,oldValue) {
+                if(newValue !== oldValue) {
+                    this.resendFilesAndUpdateResults();
                 }
             }
         },
@@ -316,8 +340,14 @@
                 <div style="flex-grow: 1; display: flex; flex-direction: column; padding: 20px;">
                     <div class="navbar d-flex justify-content-between align-items-center">
                         <h1 style="margin-bottom: 0;">代码上传和显示示例</h1>
-                        <button type="button" class="btn btn-dark" onclick="document.getElementById('fileInput').click();">上传文件</button>
-                        <input type="file" id="fileInput" accept=".txt,.py,.js,.html,.css" multiple hidden ref="fileInput" @change="handleFileChange">
+                        <div>
+                            <select class="form-select me-2" v-model="checkOption" style="display: inline-block; width: auto;">
+                                    <option value="ast">AST</option>
+                                    <option value="normal">Normal</option>
+                            </select>
+                            <button type="button" class="btn btn-dark" onclick="document.getElementById('fileInput').click();">上传文件</button>
+                            <input type="file" id="fileInput" accept=".txt,.py,.js,.html,.css" multiple hidden ref="fileInput" @change="handleFileChange">
+                        </div>
                     </div>
                     <hr>
 
