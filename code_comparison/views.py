@@ -239,13 +239,6 @@ def code_comparison_history_new(request):
     # print(groups)
     return JsonResponse({'groups': groups})
 
-@login_required
-@require_http_methods(["GET"])
-def api_logout(request):
-    # 注销用户
-    logout(request)
-    return JsonResponse({'status': 200, 'logout': True})
-
 
 def get_dif(text1, text2):
     lines1 = text1.splitlines()

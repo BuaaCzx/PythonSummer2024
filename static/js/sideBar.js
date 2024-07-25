@@ -1,7 +1,11 @@
+import {ref, onMounted} from 'vue';
+
 export default {
     props: {
         now: String,
-        username: String
+    },
+    created() {
+        this.checkLocalLoginStatus();
     },
     template: `
         <div class="sidebar-container">
@@ -15,7 +19,7 @@ export default {
                 </a>
                 <hr>
                 <ul class="nav nav-pills flex-column mb-auto">
-                    <div class="dropdown">
+                    <div v-if="isLoggedIn" class="dropdown">
                         <a href="#" class="d-flex align-items-center link-dark text-decoration-none dropdown-toggle"
                            id="dropdownUser2" data-bs-toggle="dropdown" aria-expanded="false" style="margin-bottom: 30px;">
                             <img src="https://buaaczx.github.io/image/background.jpg" alt="" width="32" height="32" class="rounded-circle me-2">
@@ -38,55 +42,94 @@ export default {
                             &nbsp{{item.title}}
                         </a>
                     </li>
+                    
                 </ul>
                 <hr>
+                
             </div>
         </div>
     `,
     data() {
         return {
-            navLinks: [
+            isLoggedIn: false,
+            username: ""
+            ,navLinks: [
                 {
                     id: 0,
                     title: "主页",
                     link: "/",
-                    icon:"bi-house"
+                    icon: "bi-house"
                 },
                 {
                     id: 1,
                     title: "代码重复检测",
                     link: "/check",
-                    icon:"bi-search"
+                    icon: "bi-search"
                 },
                 {
                     id: 2,
                     title: "分组检测",
                     link: "/group",
-                    icon:"bi-bag-dash"
+                    icon: "bi-bag-dash"
                 },
                 {
                     id: 3,
                     title: "历史记录",
                     link: "/history",
-                    icon:"bi-clock-history"
+                    icon: "bi-clock-history"
                 }
 
             ]
         }
     },
     methods: {
-        logout() {
+        logout: function() {
             let that = this;
-            axios.get("/api/logout", {
+            axios.get("/users/logout", {
                 params: {}
             }).then((response) => {
                 console.log(response);
                 if (response.status === 200 && response.data.logout === true) {
+                    localStorage.removeItem('isLoggedIn');
+                    localStorage.removeItem('username');
                     window.location.href = '/users/login/';
                 }
             }).catch((error) => {
                 console.log(error);
             });
+        },
+        checkLocalLoginStatus() {
+            const storedIsLoggedIn = localStorage.getItem('isLoggedIn');
+            const storedUsername = localStorage.getItem('username');
+            console.log("local:" + storedIsLoggedIn);
+            if (storedIsLoggedIn === 'true') {
+                this.isLoggedIn = true;
+                this.username = storedUsername;
+            } else {
+                this.checkLoginStatus();
+            }
+        },
+        async checkLoginStatus()  {
+            try {
+                const response = await axios.get('/users/check_login');
+                // { "login": true }
+                this.isLoggedIn = response.data.login;
+                if (this.isLoggedIn) {
+                    this.username = response.data.username;
+                    localStorage.setItem('isLoggedIn', 'true');
+                    localStorage.setItem('username', response.data.username);
+                } else {
+                    localStorage.removeItem('isLoggedIn');
+                    localStorage.removeItem('username');
+                }
+                console.log("成功检测，当前登录状态为：" + response.data.login)
+            } catch (error) {
+                console.log("error:" + error)
+                this.isLoggedIn = false;
+                localStorage.removeItem('isLoggedIn');
+                localStorage.removeItem('username');
+            }
         }
-    }
+    },
+
 }

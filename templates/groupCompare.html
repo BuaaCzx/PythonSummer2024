@@ -86,7 +86,7 @@
                 modalTargetCode: '',
                 showChart: false,
                 checkOption: 'normal',
-                submittedValue: 'Shreshold: 80%',
+                submittedValue: 'Threshold: 80%',
                 threshold: 0.8
             };
         },
@@ -311,7 +311,7 @@
                     const value = parseFloat(this.inputValue);
                     console.log(value);
                     if(!isNaN(value) && value >= 0 && value <= 100) {
-                        this.submittedValue = `Shreshold: ${value}%`;
+                        this.submittedValue = `Threshold: ${value}%`;
                         this.inputValue = ''; // 清空输入框的内容
                         this.threshold = value / 100;
                     } else {

@@ -17,13 +17,12 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from . import views
-from .views import CodeComparisonView, code_comparison_history, api_logout, code_comparison_history_new
+from .views import CodeComparisonView, code_comparison_history, code_comparison_history_new
 
 urlpatterns = [
     path('api/group/', CodeComparisonView.as_view(), name='group_comparison'),
     path('api/comparison/', CodeComparisonView.as_view(), name='code_comparison'),
     path('api/history/', code_comparison_history, name='code_comparison_history'),
     path('api/history_new/', code_comparison_history_new, name='code_comparison_history_new'),
-    path('api/logout/', api_logout, name='api_logout'),
     path('submissions/<int:submission_id>', views.submission_details, name='submission_details'),
 ]

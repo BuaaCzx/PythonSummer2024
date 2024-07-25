@@ -70,8 +70,9 @@
                 )
                     .then((response) => {
                         console.log(response);
-                        if (response.data.status === 'success') {
-                            alert("登录成功");
+                        let res_data = response.data;
+                        if (res_data.status === 'success') {
+                            console.log('登陆成功' + res_data.username);
                             window.location.href = '/';
                         } else {
                             alert("用户名或密码错误");
