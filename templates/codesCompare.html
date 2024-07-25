@@ -79,28 +79,93 @@
             return {
                 now: "代码重复检测",
                 uploadedFiles: [],
-                fileContents: [],
+
                 selectedFileIndex: null,
                 standardFileIndex: 0,
-                plagiarizedFiles: [],
+
+
+                showModal: false,
+                checkOption: 'ast',
                 results_similarity: [],
                 results_name: [],
                 results_diffs: [],
-                showModal: false,
-                checkOption: 'ast',
+                plagiarizedFiles: [],
+                postFormData: new FormData(),
+                isPostStd: false,
+                isPostEls: false,
+                elsUpLoadedFiles: [],
+                stdUpLoadedFile: [],
+                stdFileContent: "",
+                fileContents: [],
             };
         },
         methods: {
+            handleSubmit() {
+                if(this.isPostEls && this.isPostStd) {
+                    axios.post('/api/comparison/', this.postFormData)
+                            .then(response => {
+                                // 更新结果数据
+                                this.results_similarity = response.data.results.map(result => result.similarity_ratio);
+                                this.results_name = response.data.results.map(result => result.file_name);
+                                this.results_diffs = response.data.results.map(result => result.diff_content);
+                                this.plagiarizedFiles = [];
+                                // console.log(this.results_name);
+                                this.readStdFileContent();
+                                this.readElsFileContents();
+
+                                const newFormData = new FormData();
+                                for (const [key, value] of this.postFormData.entries()) {
+                                    // 只保留不包含 "files" 键的条目
+                                    if (key !== 'files') {
+                                        newFormData.append(key, value);
+                                    }
+                                }
+                                this.postFormData = newFormData;
+                                this.isPostEls = false;
+
+                                this.updateChart();
+
+                            })
+                            .catch(error => {
+                                console.error('Error uploading files:', error);
+                    });
+
+                } else {
+                    console.log(this.isPostStd);
+                    console.log(this.isPostEls);
+                }
+            },
+            handleStdFileChange(event) {
+                const file = event.target.files;
+                if(file.length == 1) {
+                    this.postFormData.delete('stdFile');
+                    this.postFormData.append('stdFile', file[0]);
+                    this.stdUpLoadedFile = Array.from(file);
+                    console.log(this.stdUpLoadedFile);
+                    this.isPostStd = true;
+                }
+            },
             handleFileChange(event) {
                 const files = event.target.files;
                 if (files && files.length > 0) {
-                    const formData = new FormData();
                     for (let i = 0; i < files.length; i++) {
-                        formData.append('files', files[i]);
+                        this.postFormData.append('files', files[i]);
                     }
+                    this.postFormData.append('comparison_type', 'single_to_multiple');
+                    this.postFormData.append('check_option', this.checkOption);
+                    this.elsUpLoadedFiles = Array.from(files);
+                    console.log(this.elsUpLoadedFiles);
+                    this.isPostEls = true;
+                }
+            },
+            resendFilesAndUpdateResults() {
+                if (this.uploadedFiles.length > 0) {
+                    const formData = new FormData();
+                    this.uploadedFiles.forEach(file => {
+                        formData.append('files', file);
+                    });
                     formData.append('comparison_type', 'single_to_multiple');
-                    formData.append('check_option', this.checkOption);
-
+                    formData.append('check_option', this.checkOption); // 使用当前的 checkOption
                     axios.post('/api/comparison/', formData)
                         .then(response => {
                             this.results_similarity = response.data.results.map(result => result.similarity_ratio);
@@ -116,60 +181,37 @@
                         });
                 }
             },
-            resendFilesAndUpdateResults() {
-                if (this.uploadedFiles.length > 0) {
-                    const formData = new FormData();
-                    this.uploadedFiles.forEach(file => {
-                        formData.append('files', file);
-                    });
-                    formData.append('comparison_type', 'single_to_multiple');
-                    formData.append('check_option', this.checkOption); // 使用当前的 checkOption
-
-                    axios.post('/api/comparison/', formData)
-                        .then(response => {
-                            // 更新结果数据
-                            this.results_similarity = response.data.results.map(result => result.similarity_ratio);
-                            this.results_name = response.data.results.map(result => result.file_name);
-                            this.results_diffs = response.data.results.map(result => result.diff_content);
-                            this.plagiarizedFiles = [];
-                            this.readFileContents();
-                            this.updateChart();
-                        })
-                        .catch(error => {
-                            console.error('Error uploading files:', error);
-                        });
+            readStdFileContent() {
+                this.stdFileContent = "";
+                const file = this.stdUpLoadedFile[0]; // 假设 uploadedFiles 中第一个文件是标准文件
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        this.stdFileContent = event.target.result;
+                        console.log(this.stdFileContent);
+                    };
+                    reader.readAsText(file); // 传递文件对象给 readAsText 方法
+                } else {
+                    console.error('没有找到标准文件。');
                 }
             },
-
-            readFileContents() {
+            readElsFileContents() {
                 const order = this.results_name;
                 this.fileContents = [];
-                this.standardFileIndex = 0;
-                const readerStd = new FileReader();
-                readerStd.onload = (event) => {
-                    // 获取文件内容
-                    const fileContent = event.target.result;
-                    this.fileContents.push(event.target.result);
-                };
-                const file = this.uploadedFiles[0];
-                if (file) {
-                    readerStd.readAsText(file);
-                } else {
-                    console.error('没有找到索引为 0 的文件。');
-                }
                 order.forEach((fileName, index) => {
-                    for(let i = 1; i < this.uploadedFiles.length; i++) {
-                        const thisName = this.uploadedFiles[i].name;
+                    for(let i = 0; i < this.elsUpLoadedFiles.length; i++) {
+                        const thisName = this.elsUpLoadedFiles[i].name;
                         if(thisName === fileName) {
                             const reader = new FileReader();
                             reader.onload = (event) => {
                                 this.fileContents.push(event.target.result);
                             };
-                            reader.readAsText(this.uploadedFiles[i])
+                            reader.readAsText(this.elsUpLoadedFiles[i])
                             break;
                         }
                     }
                 });
+                console.log(this.fileContents);
             },
 
             downloadFile(fileIndex) {
@@ -208,7 +250,7 @@
             },
             updateChart() {
                 var fileNames = Array.from(this.results_name);
-                var firstFileName = this.uploadedFiles[0].name;
+                var firstFileName = this.stdUpLoadedFile[0].name;
                 var similarity = Array.from(this.results_similarity);
 
                 // 计算图表容器的高度
@@ -345,9 +387,12 @@
                                     <option value="ast">AST</option>
                                     <option value="normal">Normal</option>
                             </select>
-                            <button type="button" class="btn btn-dark" onclick="document.getElementById('fileInput').click();">上传文件</button>
+                            <button type="button" class="btn btn-info" onclick="document.getElementById('stdfileInput').click();">上传标准文件</button>
+                            <input type="file" id="stdfileInput" accept=".txt,.py,.js,.html,.css" multiple hidden ref="stdfileInput" @change="handleStdFileChange">
+                            <button type="button" class="btn btn-dark" onclick="document.getElementById('fileInput').click();">上传其余文件</button>
                             <input type="file" id="fileInput" accept=".txt,.py,.js,.html,.css" multiple hidden ref="fileInput" @change="handleFileChange">
                         </div>
+                        <button class="btn btn-success mt-2" @click="handleSubmit">提交</button>
                     </div>
                     <hr>
 
@@ -380,7 +425,7 @@
                                 <!-- 右侧显示选择的文件 -->
                                 <div style="flex: 6; padding-left: 10px;">
                                     <h6>选择文件代码</h6>
-                                    <pre class="language-python" style="max-height: 400px; overflow-x: auto; overflow: auto; white-space: pre-wrap;" v-highlight><code v-if="selectedFileIndex !== null">{% verbatim %}{{ fileContents[selectedFileIndex] }}{% endverbatim %}</code></pre>
+                                    <pre class="language-python" style="max-height: 400px; overflow-x: auto; overflow: auto; white-space: pre-wrap;" v-highlight><code v-if="selectedFileIndex !== null" v-html="stdFileContent"></code></pre>
                                     <pre class="language-python" style="max-height: 400px; overflow-x: auto; overflow: auto; white-space: pre-wrap;" v-highlight><code v-if="selectedFileIndex !== null">{% verbatim %}{{ results_diffs[selectedFileIndex - 1] }}{% endverbatim %}</code></pre>
                                 </div>
                             </div>
@@ -393,6 +438,7 @@
                     </div>
                 </div>
             </div>
+
         `,
     });
 

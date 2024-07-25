@@ -33,7 +33,7 @@ class CodeComparisonView(View):
             return JsonResponse({'error': 'Invalid comparison type'}, status=400)
 
     def single_to_multiple_comparison(self, request):
-        files = request.FILES.getlist('files')
+        files = request.FILES.getlist('files')                  # 其余文件接口files，标准文件接口stdFile
         check_option = request.POST.get('check_option', 'ast')
 
         if len(files) < 2:
