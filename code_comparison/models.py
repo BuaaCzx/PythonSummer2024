@@ -11,6 +11,7 @@ class CodeComparisonHistory(models.Model):
     file2_name = models.CharField(max_length=255)
     similarity_ratio = models.FloatField()
     diff_content = models.TextField()  # 差异内容
+    diff_content_html = models.TextField(default='')
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

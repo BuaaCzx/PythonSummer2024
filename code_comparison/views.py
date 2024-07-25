@@ -53,6 +53,7 @@ class CodeComparisonView(View):
                     return JsonResponse({'error': 'python file ' + file.name + ' has error.'}, status=400)
 
             diff_content = get_dif2(std_content, file_content)
+            diff_content_html = get_dif(std_content, file_content)
 
             # 存表
             CodeComparisonHistory.objects.create(
@@ -63,7 +64,8 @@ class CodeComparisonView(View):
                 file2_name=file.name,
                 similarity_ratio=ratio,
                 created_at=datetime.now(),
-                diff_content=diff_content
+                diff_content=diff_content,
+                diff_content_html=diff_content_html
             )
             similarity_results.append({
                 'file_name': file.name,
@@ -183,6 +185,7 @@ def code_comparison_history(request):
             'similarity_ratio': history.similarity_ratio,
             'created_at': history.created_at,
             'diff_content': history.diff_content,
+            'diff_content_html': history.diff_content_html
         })
     # 按时间从最近的到最远的顺序排序
     history_list.sort(key=lambda x: x['created_at'], reverse=True)
@@ -229,7 +232,7 @@ def submission_details(request, submission_id):
         "file1_name": submission.file1_name,
         "file2_name": submission.file2_name,
         "similarity_ratio_percent": similarity_ratio_percent,
-        "diff_content": submission.diff_content,
+        "diff_content": submission.diff_content_html,
         "created_at": submission.created_at.strftime('%Y-%m-%d %H:%M:%S')
     }
     return render(request, "submission_details.html", submission_dict)
