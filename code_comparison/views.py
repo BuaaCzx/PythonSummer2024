@@ -35,6 +35,7 @@ class CodeComparisonView(View):
         files = request.FILES.getlist('files')                  # 其余文件接口files，标准文件接口stdFile
         std_file = request.FILES.get('stdFile')
         check_option = request.POST.get('check_option', 'ast')
+        group_name = request.POST.get('group_name', 'default group')
 
         std_content = std_file.read().decode('utf-8')
         similarity_results = []
@@ -65,7 +66,9 @@ class CodeComparisonView(View):
                 similarity_ratio=ratio,
                 created_at=datetime.now(),
                 diff_content=diff_content,
-                diff_content_html=diff_content_html
+                diff_content_html=diff_content_html,
+                check_type=check_option,
+                group_name=group_name,
             )
             similarity_results.append({
                 'file_name': file.name,
@@ -135,7 +138,7 @@ class CodeComparisonView(View):
         # 新建一个二维矩阵matrix, matrix[i][j]里存放文件i和文件j的json文件比较信息
         matrix = [[None for _ in range(len(files))] for _ in range(len(files))]
 
-        print(len(files))
+        # print(len(files))
 
         for i in range(len(files)):
             for j in range(len(files)):
@@ -191,6 +194,49 @@ def code_comparison_history(request):
     history_list.sort(key=lambda x: x['created_at'], reverse=True)
     return JsonResponse({'history': history_list})
 
+@login_required
+@require_http_methods(["GET"])
+def code_comparison_history_new(request):
+    groups = []
+    # users_histories = CodeComparisonHistory.objects.all().order_by('-created_at')
+    users_histories = CodeComparisonHistory.objects.filter(user=request.user).order_by('-created_at')
+    for history in users_histories:
+        fl = False
+        for group in groups:
+            if history.group_name == group['group_name']:
+                group['group_list'].append({
+                    'id': history.id,
+                    'file1_name': history.file1_name,
+                    'file2_name': history.file2_name,
+                    'file1': history.file1,
+                    'file2': history.file2,
+                    'similarity_ratio': history.similarity_ratio,
+                    'created_at': history.created_at,
+                    'diff_content': history.diff_content,
+                    'diff_content_html': history.diff_content_html
+                })
+                fl = True
+
+        if not fl:
+            groups.append({
+                'group_name': history.group_name,
+                'group_list': [{
+                    'id': history.id,
+                    'file1_name': history.file1_name,
+                    'file2_name': history.file2_name,
+                    'file1': history.file1,
+                    'file2': history.file2,
+                    'similarity_ratio': history.similarity_ratio,
+                    'created_at': history.created_at,
+                    'diff_content': history.diff_content,
+                    'diff_content_html': history.diff_content_html
+                }],
+                'created_at': history.created_at
+            })
+    # 按照 group 的 created_at 从最近的到最远的顺序排序
+    groups.sort(key=lambda x: x['created_at'], reverse=True)
+    # print(groups)
+    return JsonResponse({'groups': groups})
 
 @login_required
 @require_http_methods(["GET"])
