@@ -7,6 +7,7 @@ def home_page(request):
     return render(request, 'menu.html')
 
 
+@login_required(login_url='/users/login/')
 def code_check(request):
     return render(request, 'codesCompare.html')
 
@@ -16,5 +17,6 @@ def history(request):
     return render(request, 'history.html')
 
 
+@login_required(login_url='/users/login/')
 def group_check(request):
     return render(request, 'groupCompare.html')

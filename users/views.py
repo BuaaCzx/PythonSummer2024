@@ -46,6 +46,6 @@ def user_logout(request):
 
 def check_login(request):
     if request.user.is_authenticated:
-        return JsonResponse({'status': 'success','login': True, 'username': request.user.username})
+        return JsonResponse({'status': 'success', 'login': True, 'username': request.user.username})
     else:
         return JsonResponse({'status': 'success', 'login': False})
