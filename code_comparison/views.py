@@ -213,7 +213,8 @@ def code_comparison_history_new(request):
                     'similarity_ratio': history.similarity_ratio,
                     'created_at': history.created_at,
                     'diff_content': history.diff_content,
-                    'diff_content_html': history.diff_content_html
+                    'diff_content_html': history.diff_content_html,
+                    'check_type': history.check_type,
                 })
                 fl = True
 
