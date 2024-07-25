@@ -88,7 +88,7 @@ class CodeComparisonView(View):
 
         if len(files) < 2:
             return JsonResponse({'error': 'At least two files are required for pairwise comparison.'}, status=400)
-        threshold = request.POST.get('threshold', 0.8) # 阈值
+        threshold = request.POST.get('threshold', 0.8)  # 阈值
         plagiarism_groups = []
         used_indices = set()
 
@@ -145,7 +145,13 @@ class CodeComparisonView(View):
                 # print(file1_content)
                 # print(file2_content)
                 if i != j:
-                    ratio = difflib.SequenceMatcher(None, file1_content, file2_content).quick_ratio()
+                    if check_option == 'normal':
+                        ratio = difflib.SequenceMatcher(None, file1_content, file2_content).quick_ratio()
+                    else:
+                        try:
+                            ratio = ast_check.calc(file1_content, file2_content)
+                        except Exception as e:
+                            return JsonResponse({'error': 'python file ' + files[j].name + ' has error'}, status=400)
                     matrix[i][j] = {
                         'file1_name': files[i].name,
                         'file2_name': files[j].name,
