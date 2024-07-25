@@ -88,8 +88,7 @@ class CodeComparisonView(View):
 
         if len(files) < 2:
             return JsonResponse({'error': 'At least two files are required for pairwise comparison.'}, status=400)
-        threshold = float(request.POST.get('threshold', 0.8)) # 阈值
-        print(threshold)
+        threshold = request.POST.get('threshold', 0.8) # 阈值
         plagiarism_groups = []
         used_indices = set()
 
