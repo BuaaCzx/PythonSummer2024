@@ -35,7 +35,7 @@ class CodeComparisonView(View):
         files = request.FILES.getlist('files')                  # 其余文件接口files，标准文件接口stdFile
         std_file = request.FILES.get('stdFile')
         check_option = request.POST.get('check_option', 'ast')
-        group_name = request.POST.get('group_name', 'default group')
+        group_name = request.POST.get('classification', 'default group')
 
         std_content = std_file.read().decode('utf-8')
         similarity_results = []
@@ -91,8 +91,6 @@ class CodeComparisonView(View):
         # print(files)
         # print(len(files))
 
-        if len(files) < 2:
-            return JsonResponse({'error': 'At least two files are required for pairwise comparison.'}, status=400)
         threshold = float(request.POST.get('threshold', 0.8)) # 阈值
         plagiarism_groups = []
         used_indices = set()
@@ -281,3 +279,17 @@ def submission_details(request, submission_id):
         "check_type": check_type,
     }
     return render(request, "submission_details.html", submission_dict)
+
+
+@require_http_methods(["GET"])
+def get_groups(request):
+    print('enter get_groups')
+    users_history = CodeComparisonHistory.objects.all()
+    # users_history = CodeComparisonHistory.objects.filter(user=request.user)
+    # 先用 set 去重，然后转换成 list
+    groups = set()
+    for history in users_history:
+        groups.add(history.group_name)
+    groups = list(groups)
+    print(groups)
+    return JsonResponse({'groups': groups})

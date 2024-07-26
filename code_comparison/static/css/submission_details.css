@@ -82,8 +82,10 @@ tr.diff_sub td {
 
 /* 增加两个窗口之间的间距 */
 .row > .col-md-6 {
-    padding-right: 15px;
-    padding-left: 15px;
+    width: 300px; /* 设置固定宽度为300px */
+    margin-right: 15px; /* 保持适当的间距 */
+    margin-left: 15px; /* 保持适当的间距 */
+    float: left; /* 确保它们在同一行 */
 }
 
 .row {

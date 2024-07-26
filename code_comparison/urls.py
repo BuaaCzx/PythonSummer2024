@@ -24,5 +24,6 @@ urlpatterns = [
     path('api/comparison/', CodeComparisonView.as_view(), name='code_comparison'),
     path('api/history/', code_comparison_history, name='code_comparison_history'),
     path('api/history_new/', code_comparison_history_new, name='code_comparison_history_new'),
+    path('api/get_groups/', views.get_groups, name='get_groups'),
     path('submissions/<int:submission_id>', views.submission_details, name='submission_details'),
 ]

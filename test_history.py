@@ -3,7 +3,7 @@ from datetime import datetime
 from io import BytesIO
 
 # 假设你的 Django 服务运行在本地 8000 端口
-url = 'http://127.0.0.1:8000/api/history_new/'
+url = 'http://127.0.0.1:8000/api/get_groups/'
 
 # 登录接口为 /login/
 login_url = 'http://127.0.0.1:8000/login/'
