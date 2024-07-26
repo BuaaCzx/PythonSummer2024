@@ -211,6 +211,8 @@
                 const chartContainer = document.getElementById('chart1');
                 if (chartContainer) {
                     var myChart = echarts.init(chartContainer);
+                    var colors = ["#ac9f8a", "#4f794a", "#f091a0", "#5da39d", "#2e59a7", "#a4abd6", "#ecd452", "#ea5514", "#ab1d22", "#d4e5ef",
+                                  "#99806c", "#45465e", "#b1543b", "#da886a", "#b3342a", "#4aa595", "#e0a996", "#1facb0", "#cc1f42", "e58084",]
                     const { graphData } = this;
 
                     const option = {
@@ -233,7 +235,12 @@
                                 layout: 'force',
                                 data: graphData.nodes,
                                 links: graphData.links,
-                                categories: graphData.categories,
+                                categories: graphData.categories.map((category, index) => ({
+                                    ...category,
+                                    itemStyle: {
+                                    color: colors[Math.floor(Math.random() * colors.length)]
+                                    }
+                                })),
                                 roam: true,
                                 draggable: true,
                                 label: {
@@ -314,6 +321,7 @@
                         this.submittedValue = `Threshold: ${value}%`;
                         this.inputValue = ''; // 清空输入框的内容
                         this.threshold = value / 100;
+
                     } else {
                         this.submittedValue = 'Shreshold: ERR';
                         this.inputValue = ''; // 清空输入框的内容
@@ -361,6 +369,7 @@
                                             type="button"
                                             class="btn btn-primary"
                                             @click="submitInputValue"
+                                            style="background-color: #68b3bd; border: 1px solid #68b3bd;"
                                         >提交</button>
                             </div>
                             </form>
@@ -368,7 +377,7 @@
                                     <option value="normal">Normal</option>
                                     <option value="ast">AST</option>
                             </select>
-                            <button type="button" class="btn btn-dark" onclick="document.getElementById('fileInput').click();">上传文件</button>
+                            <button type="button" style="background-color: #d1b58d; border: 1px solid #d1b58d" class="btn btn-dark" onclick="document.getElementById('fileInput').click();">上传文件</button>
                             <input type="file" id="fileInput" accept=".txt,.py,.js,.html,.css" multiple hidden ref="fileInput" @change="handleFileChange">
 
                         </div>
