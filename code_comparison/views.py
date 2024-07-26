@@ -292,5 +292,6 @@ def get_groups(request):
     for history in users_history:
         groups.add(history.group_name)
     groups = list(groups)
+    groups.sort(reverse=True)
     # print(groups)
     return JsonResponse({'groups': groups})
