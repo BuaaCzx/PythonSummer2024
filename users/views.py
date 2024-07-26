@@ -4,10 +4,13 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_protect
+from django.core.files.base import ContentFile
 import json
 
 from django.views.decorators.http import require_http_methods
 
+from .models import UserProfile
+from .avatar_generate import IDicon
 
 @csrf_protect
 def user_login(request):
@@ -51,3 +54,77 @@ def check_login(request):
         return JsonResponse({'status': 'success', 'login': True, 'username': request.user.username})
     else:
         return JsonResponse({'status': 'success', 'login': False})
+
+@login_required
+def change_password(request):
+    if request.method == 'POST':
+        user: User = request.user
+        old_password = request.POST.get('old_password')
+        new_password = request.POST.get('new_password')
+        new_password_confirm = request.POST.get('new_password_confirm')
+        
+        if not old_password or not new_password or not new_password_confirm:
+            return JsonResponse({'status': 'failure','message': '缺少必填项'})
+        if user.check_password(old_password):
+            if new_password != new_password_confirm:
+                return JsonResponse({'status': 'failure','message': '两次密码不一致'})
+            user.set_password(new_password)
+            user.save()
+            login(request, user)
+            return JsonResponse({'status':'success','message': '修改成功'})
+        else:
+            return JsonResponse({'status': 'failure', 'message': '旧密码错误'})
+        
+@login_required
+def change_username(request):
+    if request.method == 'POST':
+        user: User = request.user
+        new_username = request.POST.get('new_username')
+        
+        if not new_username:
+            return JsonResponse({'status': 'failure','message': '请填写新的用户名'})
+        
+        if User.objects.filter(username=new_username).exists():
+            return JsonResponse({'status': 'failure','message': '该用户名已存在'})
+        
+        user.username = new_username
+        user.save()
+
+        return JsonResponse({'status':'success','message': '修改成功'})
+    
+@login_required
+def change_email(request):
+    if request.method == 'POST':
+        user: User = request.user
+        new_email = request.POST.get('new_email')
+        
+        if not new_email:
+            return JsonResponse({'status': 'failure','message': '请填写新的邮箱'})
+        
+        if User.objects.filter(email=new_email).exists():
+            return JsonResponse({'status': 'failure','message': '该邮箱已被注册'})
+        
+        user.email = new_email
+        user.save()
+        
+        return JsonResponse({'status':'success','message': '修改成功'})
+    
+@login_required
+def change_avatar(request):
+    if request.method == 'POST':
+        user: User = request.user
+        avatar = request.FILES.get('avatar')
+        
+        if not avatar:
+            return JsonResponse({'status': 'failure','message': '头像不能为空'})
+        
+        user_profile, _ = UserProfile.objects.get_or_create(user=user)
+        
+        user_profile.avatar.save(avatar.name, ContentFile(avatar.read()))
+        user_profile.save()
+
+        return JsonResponse({'status':'success','message': '修改成功'})
+    
+def random_avatar():
+    image = IDicon()
+    # 看后续有什么需求，怎么保存和使用这个image

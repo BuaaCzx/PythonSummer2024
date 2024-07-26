@@ -23,9 +23,10 @@ venv.bak/
 *.pyc
 __pycache__
 db.sqlite3
-media
+media/
 /diff.txt
 /output1.dif
 /output2.dif
 /diff.txt
 /code_comparison/migrations/0002_codecomparisonhistory_diff_content.py
+!media/avatars/default.jpg
