@@ -3,56 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>关系图示例</title>
-    <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+    <title>Diff Style Rendering</title>
+    <link rel="stylesheet" href="styles.css">
     <style>
-        #main {
-            width: 600px;
-            height: 400px;
-        }
+        body {
+    font-family: 'Courier New', Courier, monospace;
+    background-color: #f8f8f8;
+    padding: 20px;
+}
+
+.diff {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 10px;
+    overflow-x: auto;
+}
+
+pre {
+    margin: 0;
+    white-space: pre-wrap;
+}
+
+.line-removed {
+    background-color: #ffeef0;
+    color: #d73a49;
+    display: block;
+    padding: 5px;
+    margin-bottom: 2px;
+    border-left: 2px solid #d73a49;
+}
+
+.line-added {
+    background-color: #e6ffed;
+    color: #22863a;
+    display: block;
+    padding: 5px;
+    margin-bottom: 2px;
+    border-left: 2px solid #28a745;
+}
+
     </style>
 </head>
 <body>
-    <div id="main"></div>
-    <script>
-        // 初始化 ECharts 实例
-        var myChart = echarts.init(document.getElementById('main'));
-
-        // 配置关系图
-        var option = {
-            title: {
-                text: '关系图示例'
-            },
-            tooltip: {},
-            series: [
-                {
-                    type: 'graph',
-                    layout: 'force',
-                    roam: true,
-                    label: {
-                        show: true
-                    },
-                    data: [
-                        {name: '节点1', symbolSize: 50},
-                        {name: '节点2', symbolSize: 30},
-                        {name: '节点3', symbolSize: 40},
-                        {name: '节点4', symbolSize: 20}
-                    ],
-                    links: [
-                        {source: '节点1', target: '节点2'},
-                        {source: '节点2', target: '节点3'},
-                        {source: '节点3', target: '节点4'},
-                        {source: '节点4', target: '节点1'}
-                    ],
-                    force: {
-                        repulsion: 1000
-                    }
-                }
-            ]
-        };
-
-        // 使用配置项
-        myChart.setOption(option);
-    </script>
+    <div class="diff">
+        <pre>
+<span class="line-removed">- 注意：关于某项分数具体的计算方法请参考[公测文档](http://gitlab.oo.buaa.edu.cn/2022_cpp_public/course_system_guidebook/-/blob/master/%E5%85%AC%E6%B5%8B%E6%96%87%E6%A1%A3.md)各项细则，各项分数所占比例目前不予公布</span>
+<span class="line-added">+ 注意：关于某项分数具体的计算方法请参考[公测文档](http://gitlab.oo.buaa.edu.cn/2023_oopre_public/course_system_guidebook/-/blob/main/%E5%85%AC%E6%B5%8B%E6%96%87%E6%A1%A3.md)各项细则，各项分数所占比例目前不予公布</span>
+        </pre>
+    </div>
 </body>
 </html>

@@ -124,6 +124,7 @@
                 stdFileName: "",
                 showTooltip: false,
                 showText: "",
+                classification: "NONE",
             };
         },
         methods: {
@@ -136,6 +137,10 @@
                         }
                 }
                 if(this.isPostEls && this.isPostStd) {
+                    if(this.inputValue) {
+                        this.classification = this.inputValue;
+                    }
+                    this.postFormData.append('classification', this.classification);
                     axios.post('/api/comparison/', this.postFormData)
                             .then(response => {
                                 // 更新结果数据
@@ -145,7 +150,7 @@
                                 this.plagiarizedFiles = [];
                                 this.readStdFileContent();
                                 this.readElsFileContents();
-
+                                console.log(this.results_diffs);
                                 const newFormData = new FormData();
                                 for (const [key, value] of this.postFormData.entries()) {
                                     // 只保留不包含 "files" 键的条目
@@ -192,7 +197,6 @@
                     this.postFormData.delete('stdFile');
                     this.postFormData.append('stdFile', file[0]);
                     this.stdUpLoadedFile = Array.from(file);
-                    console.log(this.stdUpLoadedFile);
                     this.isPostStd = true;
                     this.stdFileName = file[0].name;
                 } else {
@@ -216,8 +220,8 @@
                     }
                     this.postFormData.append('comparison_type', 'single_to_multiple');
                     this.postFormData.append('check_option', this.checkOption);
+
                     this.elsUpLoadedFiles = Array.from(files);
-                    console.log(this.elsUpLoadedFiles);
                     this.isPostEls = true;
                 }
             },
@@ -269,7 +273,6 @@
             },
             readElsFileContents() {
                 const order = this.results_name;
-                console.log(order);
                 this.fileContents = [];
                 order.forEach((fileName, index) => {
                     for(let i = 0; i < this.elsUpLoadedFiles.length; i++) {
@@ -326,7 +329,6 @@
             },
             exportPlagiarizedFiles() {
                 const zip = new JSZip();
-                console.log(this.plagiarizedFiles);
                 this.plagiarizedFiles.forEach(index => {
                     zip.file(this.results_name[index - 1], this.fileContents[index]);
                 });
@@ -466,7 +468,22 @@
                             <button type="button" style="background-color: #b4abaf; border: 1px solid #b4abaf;" class="btn btn-secondary" onclick="document.getElementById('fileInput').click();">上传其余文件</button>
                             <input type="file" id="fileInput" accept=".txt,.py,.js,.html,.css" multiple hidden ref="fileInput" @change="handleFileChange">
                         </div>
-                        <button class="btn btn-success mt-2" @click="handleSubmit" style="border: 1px solid #8397d0; background-color: #8397d0;">提交</button>
+
+                        <div class="input-group me-2" style="width: auto;">
+                                    <input
+                                        type="text"
+                                        v-model="inputValue"
+                                        class="form-control"
+                                        :placeholder="请输入分类名"
+                                        style="width: 150px;"
+                                    />
+                                    <button
+                                        type="button"
+                                        class="btn btn-primary"
+                                        @click="handleSubmit"
+                                        style="border: 1px solid #8397d0; background-color: #8397d0;"
+                                    >提交</button>
+                        </div>
                     </div>
                     <hr>
 
@@ -475,14 +492,10 @@
                          <button v-if="stdFileName" type="button" style="margin-left: 10px; background-color: #30aecf; border: 1px solid #63bbd0;" class="btn btn-primary" @click="downloadStdFile()">下载标准文件</button>
                          <button v-if="showExportButton" type="button" style="margin-left: 10px; background-color: #eecc99; border: 1px solid #eecc99;" class="btn btn-primary" @click="exportPlagiarizedFiles">导出被标记为抄袭的文件</button>
                          </p>
-
                     </div>
 
                     <!-- 图表区域 -->
                     <div id="chart1" style="width: 100%; height: 560px; margin-top: 20px; overflow-y: auto;"></div>
-                    <div style="" >
-
-                    </div>
                 </div>
             </div>
 
@@ -508,7 +521,7 @@
                                 <div style="flex: 6; padding-left: 10px;">
                                     <h6>选择文件代码</h6>
                                     <pre class="language-python" style="max-height: 400px; overflow-x: auto; overflow: auto; white-space: pre-wrap;" v-highlight><code v-if="selectedFileIndex !== null">{% verbatim %}{{ fileContents[selectedFileIndex - 1] }}{% endverbatim %}</code></pre>
-                                    <pre class="language-python" style="max-height: 400px; overflow-x: auto; overflow: auto; white-space: pre-wrap;" v-highlight><code v-if="selectedFileIndex !== null">{% verbatim %}{{ results_diffs[selectedFileIndex - 1] }}{% endverbatim %}</code></pre>
+                                    <pre style="max-height: 400px; overflow-x: auto; overflow: auto; white-space: pre-wrap;" v-if="selectedFileIndex !== null">{% verbatim %}{{ results_diffs[selectedFileIndex - 1] }}{% endverbatim %}</code></pre>
                                 </div>
                             </div>
                             <div class="modal-footer">
