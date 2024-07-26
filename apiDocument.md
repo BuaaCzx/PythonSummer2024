@@ -13,7 +13,7 @@
 
 ```txt
 {
-"groups": {
+"groups": [{
         "group_name": "",
         "group_list": [{
                     "id": history.id,
@@ -30,7 +30,7 @@
                 ...
         ],
         "created_at": ""
-    }
+    }]
 }
 ```
 
