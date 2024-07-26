@@ -266,6 +266,10 @@ def get_dif2(text1, text2):
 def submission_details(request, submission_id):
     submission = get_object_or_404(CodeComparisonHistory, id=submission_id)
     similarity_ratio_percent = round(submission.similarity_ratio * 100, 2)
+    if submission.check_type[2] == 'n':
+        check_type = '普通查重'
+    else:
+        check_type = '语法树查重'
     submission_dict = {
         "file1": submission.file1,
         "file2": submission.file2,
@@ -273,6 +277,7 @@ def submission_details(request, submission_id):
         "file2_name": submission.file2_name,
         "similarity_ratio_percent": similarity_ratio_percent,
         "diff_content": submission.diff_content_html,
-        "created_at": submission.created_at.strftime('%Y-%m-%d %H:%M:%S')
+        "created_at": submission.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+        "check_type": check_type,
     }
     return render(request, "submission_details.html", submission_dict)

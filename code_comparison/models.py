@@ -10,7 +10,7 @@ class CodeComparisonHistory(models.Model):
     file1_name = models.CharField(max_length=255)  # 文件名
     file2_name = models.CharField(max_length=255)
     similarity_ratio = models.FloatField()
-    check_type = models.CharField(max_length=20, choices=(('normal', '普通查重'), ('ast', '抽象语法树查重')))
+    check_type = models.CharField(max_length=20, choices=(('normal', '普通查重'), ('ast', '抽象语法树查重')), default=('normal', '普通查重'))
     group_name = models.CharField(max_length=255, default='default group')  # 组名
     diff_content = models.TextField(default='')  # 差异内容
     diff_content_html = models.TextField(default='')
