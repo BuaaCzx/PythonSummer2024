@@ -281,15 +281,16 @@ def submission_details(request, submission_id):
     return render(request, "submission_details.html", submission_dict)
 
 
+@login_required
 @require_http_methods(["GET"])
 def get_groups(request):
-    print('enter get_groups')
-    users_history = CodeComparisonHistory.objects.all()
-    # users_history = CodeComparisonHistory.objects.filter(user=request.user)
+    # print('enter get_groups')
+    # users_history = CodeComparisonHistory.objects.all()
+    users_history = CodeComparisonHistory.objects.filter(user=request.user)
     # 先用 set 去重，然后转换成 list
     groups = set()
     for history in users_history:
         groups.add(history.group_name)
     groups = list(groups)
-    print(groups)
+    # print(groups)
     return JsonResponse({'groups': groups})
