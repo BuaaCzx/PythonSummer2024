@@ -45,3 +45,4 @@
 | 7.25 21:20  | UUQ    | 重写了login的登录逻辑，弃用了默认的表单submit（无法回调），未完成。 对users.views的login函数进行了修改（对请求的接受和处理） |
 | 7.25 21:43  | czx    | 数据库表里新增了 'group_name' 和 'check_type' 两列，分别表示每次查询的组的名字和查询的类型（只能是'normal'或'ast'），在历史记录那里可以给予展示，历史记录新增 api/history_new/ 新接口，会以一组一组的列表形式返回一个json，详见api文档 |
 | 7.26 0:00   | UUQ    | 修改了login接口逻辑（POST 接口，GET视图），迁移了logout路由到users；实现了login提示功能（**待完善**），实现了sidebar检测登录状态（依赖browser本地存储和users/check_login/接口） |
+| 7.26 11:37  | UUQ    | 更新了login & register的失败/成功提示，增加了判空。**TODO：迁移旧页面的正则** |

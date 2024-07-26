@@ -11,6 +11,8 @@ from django.views.decorators.http import require_http_methods
 
 @csrf_protect
 def user_login(request):
+    if request.user.is_authenticated:
+        return redirect('/')
     if request.method == 'POST':
         data = json.loads(request.body.decode())
         username = data.get('username')
@@ -24,7 +26,7 @@ def user_login(request):
                 return JsonResponse({'status': 'failure', 'message': '该邮箱已被注册'})
             user = User.objects.create_user(username=username, password=password, email=email)
             login(request, user)
-            return redirect('home_page')
+            return JsonResponse({'status': 'success', 'message': '注册成功', 'username': username})
         else:
             # Login
             user = authenticate(request, username=username, password=password)
