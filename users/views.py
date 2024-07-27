@@ -29,6 +29,7 @@ def user_login(request):
             elif User.objects.filter(email=email).exists():
                 return JsonResponse({'status': 'failure', 'message': '该邮箱已被注册'})
             user = User.objects.create_user(username=username, password=password, email=email)
+            user_profile, _ = UserProfile.objects.get_or_create(user=user)
             login(request, user)
             return JsonResponse({'status': 'success', 'message': '注册成功', 'username': username})
         else:
@@ -123,12 +124,15 @@ def change_avatar(request):
         if not avatar:
             return JsonResponse({'status': 'failure', 'message': '头像不能为空'})
 
-        user_profile, _ = UserProfile.objects.get_or_create(user=user)
+        user_profile = UserProfile.objects.get(user=user)
 
         user_profile.avatar.save(avatar.name, ContentFile(avatar.read()))
         user_profile.save()
 
         return JsonResponse({'status': 'success', 'message': '修改成功'})
+    # else:
+    #     user_profile, _ = UserProfile.objects.get_or_create(user=request.user)
+    #     return render(request, 'users/profile_test.html', {'user_profile': user_profile, 'user': request.user})
 
 
 def random_avatar():
