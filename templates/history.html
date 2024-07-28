@@ -107,21 +107,27 @@
                 }
             }
             ,
+            mounted() {
+                $(function () { $("[data-toggle='tooltip']").tooltip(); });
+                console.log("Enable bootstrap tooltip.");
+            },
             template: `
         <div class='d-flex flex-row' style="margin-left: clamp(200px, 20vw, 20vw); padding: 15px;">
             <side-bar :now='now'></side-bar>
             <div style="flex-grow: 1; padding: 20px;">
-                <br>
-                <div class="pb-3"><h1>历史记录</h1></div>
-                <div v-if="isLoaded" class="accordion" id="history_new">
-                    <div class="card" v-for="(group,index) in groups" :key="index">
-                        <div class="card-header">
-                            <a class="btn" data-bs-toggle="collapse" :href="'#collapse'+index">
-                               {{ group.group_name }}
-                            </a>
-                        </div>
-                        <div :id="'collapse'+index" class="collapse" data-bs-parent="#history_new">
-                            <div class="card-body p-0 list-group list-group-numbered" style="border:none; border-radius: 0">
+                <div class="pb-3 fs-1">
+                    历史记录
+                    <i class="bi bi-question-circle fs-4" style="color:#0D6EFD" data-toggle="tooltip" data-placement="right" title="按照分组展示了您的历史查重记录，不包含分组检测。"></i>
+                </div>
+                <div v-if="isLoaded" class="accordion accordion" id="history_new">
+                    <div class="accordion-item" v-for="(group,index) in groups" :key="index">
+                        <h2 class="accordion-header" :id="'flush-heading'+index">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" :data-bs-target="'#flush-collapse'+index" aria-expanded="false" :aria-controls="'flush-collapse'+index">
+                                {{ group.group_name === 'NONE' ? '未命名查重批次' : group.group_name }}
+                            </button>
+                        </h2>
+                        <div :id="'flush-collapse'+index" class="accordion-collapse collapse" aria-labelledby="flush-headingOne" data-bs-parent="#history_new">
+                            <div class="accordion-body p-0 list-group list-group-numbered">
                                 <li v-for='item in group.group_list' :key="item.id" style="border-left:none; border-right:none; border-radius: 0" class='list-group-item d-flex justify-content-between align-items-start'>
                                     <div class='ms-2 me-auto'>
                                         <div class='fw-bold'><a :href="historyRoute+item.id.toString()" style="text-decoration: none">{{item.file1_name}} vs {{ item.file2_name }}</a></div>
@@ -129,9 +135,27 @@
                                     </div>
                                     <span :class='["badge",rateClassify(item)=="正常"?"bg-success":"bg-danger","rounded-pill"]'>{{rateClassify(item)}}</span>
                                 </li>
-                            </div>
+
                         </div>
                     </div>
+<!--                    <div class="card" v-for="(group,index) in groups" :key="index">-->
+<!--                        <div class="card-header">-->
+<!--                            <a class="btn" data-bs-toggle="collapse" :href="'#collapse'+index">-->
+<!--                               {{ group.group_name === 'NONE' ? '未命名查重批次' : group.group_name }}-->
+<!--                            </a>-->
+<!--                        </div>-->
+<!--                        <div :id="'collapse'+index" class="collapse" data-bs-parent="#history_new">-->
+<!--                            <div class="card-body p-0 list-group list-group-numbered" style="border:none; border-radius: 0">-->
+<!--                                <li v-for='item in group.group_list' :key="item.id" style="border-left:none; border-right:none; border-radius: 0" class='list-group-item d-flex justify-content-between align-items-start'>-->
+<!--                                    <div class='ms-2 me-auto'>-->
+<!--                                        <div class='fw-bold'><a :href="historyRoute+item.id.toString()" style="text-decoration: none">{{item.file1_name}} vs {{ item.file2_name }}</a></div>-->
+<!--                                        <small>提交时间: {{showDate(item.created_at)}}</small>-->
+<!--                                    </div>-->
+<!--                                    <span :class='["badge",rateClassify(item)=="正常"?"bg-success":"bg-danger","rounded-pill"]'>{{rateClassify(item)}}</span>-->
+<!--                                </li>-->
+<!--                            </div>-->
+<!--                        </div>-->
+<!--                    </div>-->
                 </div>
 
 <!--                <br>-->
@@ -144,6 +168,7 @@
 <!--                        <span :class='["badge",rateClassify(item)=="正常"?"bg-success":"bg-danger","rounded-pill"]'>{{rateClassify(item)}}</span>-->
 <!--                    </li>-->
 <!--                </ol>-->
+</div>
             </div>
         </div>
         `,
