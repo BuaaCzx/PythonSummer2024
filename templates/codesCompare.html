@@ -78,6 +78,32 @@
           line-height: 1.5; /* Line height */
           margin-bottom: 10px; /* Margin at the bottom */
         }
+
+        .diff-container {
+          max-height: 400px;
+          overflow-y: auto;
+          overflow-x: auto;
+          white-space: pre-wrap;
+          font-family: monospace;
+        }
+        .diff-line {
+            font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            margin: 0;
+            padding: 0;
+            line-height: 1.4; /* Adjust line-height for tighter spacing */
+        }
+
+        .added-line {
+            background-color: #e6ffed; /* Light green */
+        }
+
+        .removed-line {
+            background-color: #ffeef0; /* Light pink */
+        }
+
+        .unchanged-line {
+            background-color: #eaeaea; /* No background for unchanged lines */
+        }
     </style>
 </head>
 <body>
@@ -128,6 +154,14 @@
             };
         },
         methods: {
+            getLineClass(line) {
+              if (line.startsWith("+")) {
+                return "added-line";
+              } else if (line.startsWith("-")) {
+                return "removed-line";
+              }
+              return "unchanged-line";
+            },
             handleSubmit() {
                 const chartContainer = document.getElementById('chart1');
                 if(chartContainer) {
@@ -412,6 +446,7 @@
                 myChart.on('click', (params) => {
                     this.selectedFileIndex = params.dataIndex + 1;
                     this.showModal = true;
+                    console.log("1231231");
                 });
                 myChart.resize(); // Ensure chart resizes properly
             },
@@ -423,6 +458,8 @@
             handleBackdropClick(event) {
                 // Ensure click events on the backdrop are processed correctly
                 if (event.target.classList.contains('modal-backdrop')) {
+                    this.closeModal();
+                } else if (event.target.classList.contains('modal')) {
                     this.closeModal();
                 }
             }
@@ -447,7 +484,22 @@
         computed: {
             showExportButton() {
                 return this.plagiarizedFiles.length > 0;
-            }
+            },
+            parsedDiff() {
+              if (this.selectedFileIndex === null) {
+                    return [];
+              }
+              const diffString = this.results_diffs[this.selectedFileIndex - 1];
+              const raw_strs = diffString.split("\n");
+              const res = [];
+              for(let i = 0; i < raw_strs.length; i++) {
+                    if(raw_strs[i] !== "") {
+                        res.push(raw_strs[i]);
+                    }
+              }
+              console.log(res);
+              return res;
+            },
         },
         template: `
             <div class="d-flex flex-row" style="margin-left: clamp(200px, 20vw, 20vw); padding: 15px;">
@@ -500,8 +552,7 @@
             </div>
 
             <!-- 模态框 -->
-            <div v-if="showModal">
-                <div class="modal-backdrop" @click="handleBackdropClick"></div>
+            <div v-if="showModal" class="modal-backdrop" @click="handleBackdropClick">
                 <div class="modal" tabindex="-1" style="display: block;">
                     <div class="modal-dialog modal-lg">
                         <div class="modal-content">
@@ -521,11 +572,17 @@
                                 <div style="flex: 6; padding-left: 10px;">
                                     <h6>选择文件代码</h6>
                                     <pre class="language-python" style="max-height: 400px; overflow-x: auto; overflow: auto; white-space: pre-wrap;" v-highlight><code v-if="selectedFileIndex !== null">{% verbatim %}{{ fileContents[selectedFileIndex - 1] }}{% endverbatim %}</code></pre>
-                                    <pre style="max-height: 400px; overflow-x: auto; overflow: auto; white-space: pre-wrap;" v-if="selectedFileIndex !== null">{% verbatim %}{{ results_diffs[selectedFileIndex - 1] }}{% endverbatim %}</code></pre>
+                                    <div v-if="selectedFileIndex !== null" class="diff-container">
+                                        <div  v-for="(line, index) in parsedDiff" :key="index" :class="['diff-line', getLineClass(line)]">
+                                            {% verbatim %}
+                                            <span class="line-number">{{ index + 1 }}</span>
+                                            {{line}}
+                                            {% endverbatim %}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             <div class="modal-footer">
-
                                 <button type="button" style="background-color: #c8191d; border: 1px solid #b01f24;" class="btn btn-danger" @click="markAsPlagiarized(selectedFileIndex)">标记为抄袭</button>
                                 <button type="button" style="background-color: #53976f; border: 1px solid #007175;" class="btn btn-success" @click="markAsNotPlagiarized(selectedFileIndex)">标记为未抄袭</button>
                             </div>
