@@ -17,10 +17,21 @@ export default {
                 </a>
                 <hr>
                 <ul class="nav nav-pills flex-column mb-auto">
-                    <div v-if="isLoggedIn" class="dropdown">
+                    
+                    <li v-for="item in navLinks" :key="item.id" class="nav-item">
+                        <a :href="item.link" :class="['nav-link', now == item.title ? 'active' : 'link-dark']" aria-current="page">
+
+                            <i :class="['bi', item.icon] "></i>
+                            &nbsp{{item.title}}
+                        </a>
+                    </li>
+                    
+                </ul>
+                <hr>
+                <div v-if="isLoggedIn" class="dropdown">
                         <a href="#" class="d-flex align-items-center link-dark text-decoration-none dropdown-toggle"
                            id="dropdownUser2" data-bs-toggle="dropdown" aria-expanded="false" style="margin-bottom: 30px;">
-                            <img src="https://buaaczx.github.io/image/background.jpg" alt="" width="32" height="32" class="rounded-circle me-2">
+                            <img :src="avatar_url" alt="" width="32" height="32" class="rounded-circle me-2">
                             <strong>{{ username }}</strong>
                         </a>
                         <ul class="dropdown-menu text-small shadow" aria-labelledby="dropdownUser2">
@@ -33,25 +44,15 @@ export default {
                             <li><a class="dropdown-item" @click="logout">退出登录</a></li>
                         </ul>
                     </div>
-                    <li v-for="item in navLinks" :key="item.id" class="nav-item">
-                        <a :href="item.link" :class="['nav-link', now == item.title ? 'active' : 'link-dark']" aria-current="page">
-
-                            <i :class="['bi', item.icon] "></i>
-                            &nbsp{{item.title}}
-                        </a>
-                    </li>
-                    
-                </ul>
-                <hr>
-                
             </div>
         </div>
     `,
     data() {
         return {
             isLoggedIn: false,
-            username: ""
-            ,navLinks: [
+            username: "",
+            avatar_url: "/media/avatars/default.jpg", //https://buaaczx.github.io/image/background.jpg
+            navLinks: [
                 {
                     id: 0,
                     title: "主页",
@@ -90,6 +91,7 @@ export default {
                 if (response.status === 200 && response.data.logout === true) {
                     localStorage.removeItem('isLoggedIn');
                     localStorage.removeItem('username');
+                    localStorage.removeItem('avatar');
                     window.location.href = '/users/login/';
                 }
             }).catch((error) => {
@@ -99,6 +101,7 @@ export default {
         checkLocalLoginStatus() {
             const storedIsLoggedIn = localStorage.getItem('isLoggedIn');
             const storedUsername = localStorage.getItem('username');
+            const storedAvatar = localStorage.getItem('avatar');
             console.log("local:" + storedIsLoggedIn);
             if (storedIsLoggedIn === 'true') {
                 this.isLoggedIn = true;
@@ -114,11 +117,15 @@ export default {
                 this.isLoggedIn = response.data.login;
                 if (this.isLoggedIn) {
                     this.username = response.data.username;
+                    this.avatar_url = response.data.avatar;
                     localStorage.setItem('isLoggedIn', 'true');
                     localStorage.setItem('username', response.data.username);
+                    localStorage.setItem('avatar', response.data.avatar);
                 } else {
                     localStorage.removeItem('isLoggedIn');
                     localStorage.removeItem('username');
+
+                    localStorage.removeItem('avatar');
                 }
                 console.log("成功检测，当前登录状态为：" + response.data.login)
             } catch (error) {

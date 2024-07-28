@@ -31,13 +31,23 @@ def user_login(request):
             user = User.objects.create_user(username=username, password=password, email=email)
             user_profile, _ = UserProfile.objects.get_or_create(user=user)
             login(request, user)
-            return JsonResponse({'status': 'success', 'message': '注册成功', 'username': username})
+            return JsonResponse({
+                'status': 'success',
+                'message': '注册成功',
+                'username': username,
+                'avatar': user_profile.avatar.url
+            })
         else:
             # Login
             user = authenticate(request, username=username, password=password)
             if user is not None:
                 login(request, user)
-                return JsonResponse({'status': 'success', 'message': '登录成功', 'username': username})
+                return JsonResponse({
+                    'status': 'success',
+                    'message': '登录成功',
+                    'username': username,
+                    'avatar': user.userprofile.avatar.url
+                })
             else:
                 return JsonResponse({'status': 'failure', 'message': '用户名或密码错误'})
 
@@ -53,7 +63,13 @@ def user_logout(request):
 
 def check_login(request):
     if request.user.is_authenticated:
-        return JsonResponse({'status': 'success', 'login': True, 'username': request.user.username})
+        user_profile = UserProfile.objects.get_or_create(user=request.user)
+        return JsonResponse({
+            'status': 'success',
+            'login': True,
+            'username': request.user.username,
+            'avatar': user_profile[0].avatar.url
+        })
     else:
         return JsonResponse({'status': 'success', 'login': False})
 
