@@ -27,7 +27,6 @@
     import sideBar from "../static/js/sideBar.js";
 
     const root = '/'
-    const historyRoute = root + 'submissions/';
     const app = createApp({
         components: {
             sideBar
@@ -36,25 +35,11 @@
             return {
                 historyRoute: root + 'submissions/',
                 now: "主页",
-                isLoaded: false,
                 systemTime: '',
                 loginTime: ''
             }
         },
         created: function () {
-            let that = this;
-            axios.get("/menu", {
-                params: {
-                    id: 1233214
-                }
-            }).then((response) => {
-                console.log(that);
-                that.isLoaded = true;
-            }).catch((error) => {
-                console.log(error);
-                console.log(that);
-                that.isLoaded = true;
-            });
             this.loginTime = new Date().toLocaleString();
         },
         mounted: function () {
@@ -67,13 +52,27 @@
             }
         },
         template: `
-        <div class='d-flex flex-row' style="margin-left: 20vw; padding: 15px;">
-            <div>
-                <div>当前时间: {% verbatim %} {{ systemTime }} {% endverbatim %}</div>
-                <div>登录时间: {% verbatim %} {{ loginTime }} {% endverbatim %}</div>
-                <side-bar :now='now'></side-bar>
+        {% verbatim %}
+        <div class='d-flex flex-row' style="margin-left: clamp(200px, 20vw, 20vw); padding: 15px;">
+            <side-bar :now='now'></side-bar>
+            <div style="flex-grow: 1; padding: 20px;">
+                <div class="card ">
+                    <div class="card-header">
+                        <h5 class="card-title">欢迎来到主页</h5>
+                    </div>
+                    <div class="card-body ">
+                        <p class="card-text">当前时间: {{ systemTime }}</p>
+                        <p class="card-text">登录时间: {{ loginTime }}</p>
+                    </div>
+                </div>
+                <div>
+                    <span>当前时间:  {{ systemTime }}</span><br>
+                    <span>登录时间:  {{ loginTime }}</span>
+                </div>
+
             </div>
         </div>
+         {% endverbatim %}
         `,
     });
     app.mount("#app");

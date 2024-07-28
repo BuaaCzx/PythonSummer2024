@@ -11,11 +11,9 @@ export default {
         <div class="sidebar-container">
            <div class="sidebar d-flex flex-column flex-shrink-0 p-3 bg-light"
                 style="width: 20vw; max-width: 280px; min-width: 200px; position: fixed; left: 0; top: 0; height: 100vh;">
-                <a href="#" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-dark text-decoration-none">
-                    <svg class="bi me-2" width="40" height="32">
-                        <use xlink:href="#bootstrap"/> 
-                    </svg>
-                    <span class="fs-4">Duplication Check</span>
+                <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-dark text-decoration-none">
+                    <i class="bi bi-file-earmark-code fs-2"></i>
+                    <span class="fs-5">Duplication Check</span>
                 </a>
                 <hr>
                 <ul class="nav nav-pills flex-column mb-auto">
@@ -28,7 +26,7 @@ export default {
                         <ul class="dropdown-menu text-small shadow" aria-labelledby="dropdownUser2">
                             <li><a class="dropdown-item" href="#">New project...</a></li>
                             <li><a class="dropdown-item" href="#">Settings</a></li>
-                            <li><a class="dropdown-item" href="#">Profile</a></li>
+                            <li><a class="dropdown-item" href="/users/profile/">个人资料</a></li>
                             <li>
                                 <hr class="dropdown-divider">
                             </li>
