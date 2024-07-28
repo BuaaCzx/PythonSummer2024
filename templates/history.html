@@ -115,9 +115,10 @@
         <div class='d-flex flex-row' style="margin-left: clamp(200px, 20vw, 20vw); padding: 15px;">
             <side-bar :now='now'></side-bar>
             <div style="flex-grow: 1; padding: 20px;">
-                <div class="fs-1">
+                <div class="fs-1 d-flex align-content-center">
                     历史记录
-                    <i class="bi bi-question-circle fs-4" style="color:#0D6EFD" data-toggle="tooltip" data-placement="right" title="按照分组展示了您的历史查重记录，不包含分组检测。"></i>
+                    <div style="display:inline-block;vertical-align:middle;"> &nbsp<i class="bi bi-question-circle fs-4" style="color:#0D6EFD" data-toggle="tooltip" data-placement="right" title="按照分组展示了您的历史查重记录，不包含分组检测。"></i></div>
+
                 </div>
                 <hr>
                 <div v-if="isLoaded" class="accordion accordion mt-4" id="history_new">
