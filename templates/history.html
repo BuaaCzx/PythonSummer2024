@@ -115,11 +115,15 @@
         <div class='d-flex flex-row' style="margin-left: clamp(200px, 20vw, 20vw); padding: 15px;">
             <side-bar :now='now'></side-bar>
             <div style="flex-grow: 1; padding: 20px;">
-                <div class="pb-3 fs-1">
+                <div class="fs-1">
                     历史记录
                     <i class="bi bi-question-circle fs-4" style="color:#0D6EFD" data-toggle="tooltip" data-placement="right" title="按照分组展示了您的历史查重记录，不包含分组检测。"></i>
                 </div>
-                <div v-if="isLoaded" class="accordion accordion" id="history_new">
+                <hr>
+                <div v-if="isLoaded" class="accordion accordion mt-4" id="history_new">
+                    <div v-if="groups.length === 0" class="alert alert-primary mt-3 me-4 px-3" role="alert">
+                        暂无查重记录，快去<a href="/check/" class="text-decoration-none fw-bold" style="color:orangered">体验一下</a>吧
+                    </div>
                     <div class="accordion-item" v-for="(group,index) in groups" :key="index">
                         <h2 class="accordion-header" :id="'flush-heading'+index">
                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" :data-bs-target="'#flush-collapse'+index" aria-expanded="false" :aria-controls="'flush-collapse'+index">
@@ -136,8 +140,8 @@
                                     <span :class='["badge",rateClassify(item)=="正常"?"bg-success":"bg-danger","rounded-pill"]'>{{rateClassify(item)}}</span>
                                 </li>
 
+                            </div>
                         </div>
-                    </div>
 <!--                    <div class="card" v-for="(group,index) in groups" :key="index">-->
 <!--                        <div class="card-header">-->
 <!--                            <a class="btn" data-bs-toggle="collapse" :href="'#collapse'+index">-->
@@ -156,7 +160,7 @@
 <!--                            </div>-->
 <!--                        </div>-->
 <!--                    </div>-->
-                </div>
+                    </div>
 
 <!--                <br>-->
 <!--                <ol v-if='isLoaded' class='list-group list-group-numbered'>-->
@@ -168,7 +172,7 @@
 <!--                        <span :class='["badge",rateClassify(item)=="正常"?"bg-success":"bg-danger","rounded-pill"]'>{{rateClassify(item)}}</span>-->
 <!--                    </li>-->
 <!--                </ol>-->
-</div>
+                </div>
             </div>
         </div>
         `,

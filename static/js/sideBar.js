@@ -5,6 +5,27 @@ export default {
         now: String,
     },
     created() {
+        Storage.prototype.setExpire = (key, value, expire) => {
+            let obj = {
+                data: value,
+                time: Date.now(),
+                expire: expire
+            };
+
+            localStorage.setItem(key, JSON.stringify(obj));
+        };
+        Storage.prototype.getExpire = key => {
+            let val = localStorage.getItem(key);
+            if (!val) {
+                return val;
+            }
+            val = JSON.parse(val);
+            if (Date.now() - val.time > val.expire) {
+                localStorage.removeItem(key);
+                return null;
+            }
+            return val.data;
+        }
         this.checkLocalLoginStatus();
     },
     template: `
@@ -30,7 +51,7 @@ export default {
                 <hr>
                 <div v-if="isLoggedIn" class="dropdown">
                         <a href="#" class="d-flex align-items-center link-dark text-decoration-none dropdown-toggle"
-                           id="dropdownUser2" data-bs-toggle="dropdown" aria-expanded="false" style="margin-bottom: 30px;">
+                           id="dropdownUser2" data-bs-toggle="dropdown" aria-expanded="false">
                             <img :src="avatar_url" alt="" width="32" height="32" class="rounded-circle me-2">
                             <strong>{{ username }}</strong>
                         </a>
@@ -92,20 +113,21 @@ export default {
                     localStorage.removeItem('isLoggedIn');
                     localStorage.removeItem('username');
                     localStorage.removeItem('avatar');
-                    window.location.href = '/users/login/';
+                    window.location.href = '/';
                 }
             }).catch((error) => {
                 console.log(error);
             });
         },
         checkLocalLoginStatus() {
-            const storedIsLoggedIn = localStorage.getItem('isLoggedIn');
-            const storedUsername = localStorage.getItem('username');
-            const storedAvatar = localStorage.getItem('avatar');
+            const storedIsLoggedIn = localStorage.getExpire('isLoggedIn');
+            const storedUsername = localStorage.getExpire('username');
+            const storedAvatar = localStorage.getExpire('avatar');
             console.log("local:" + storedIsLoggedIn);
             if (storedIsLoggedIn === 'true') {
                 this.isLoggedIn = true;
                 this.username = storedUsername;
+                this.avatar_url = storedAvatar;
             } else {
                 this.checkLoginStatus();
             }
@@ -118,9 +140,9 @@ export default {
                 if (this.isLoggedIn) {
                     this.username = response.data.username;
                     this.avatar_url = response.data.avatar;
-                    localStorage.setItem('isLoggedIn', 'true');
-                    localStorage.setItem('username', response.data.username);
-                    localStorage.setItem('avatar', response.data.avatar);
+                    localStorage.setExpire('isLoggedIn', 'true', 60000); // 10min
+                    localStorage.setExpire('username', response.data.username,60000);
+                    localStorage.setExpire('avatar', response.data.avatar,60000);
                 } else {
                     localStorage.removeItem('isLoggedIn');
                     localStorage.removeItem('username');
@@ -134,7 +156,8 @@ export default {
                 localStorage.removeItem('isLoggedIn');
                 localStorage.removeItem('username');
             }
-        }
+        },
+
     },
 
 }

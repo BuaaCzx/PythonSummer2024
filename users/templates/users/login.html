@@ -142,7 +142,7 @@
         template: `
 <div class='d-flex flex-row' style="margin-left: clamp(200px, 20vw, 20vw); padding: 15px;">
     <div class="float-notification">
-        <span><i></i>&nbsp请先登录！</span>
+        <span>&nbsp请先登录！</span>
     </div>
 {% csrf_token %}
 {% verbatim %}
@@ -153,7 +153,7 @@
             <div class="col-10 p-5">
                 <div :class="['main',right_active && 'right-panel-active']" id="main">
                     <div class="form-container sign-up-container">
-                        <form action="/users/login/" method="POST">
+                        <form class="form-group" action="/users/login/" method="POST">
 
                             <h1>注 册</h1>
                             <br>
@@ -163,9 +163,12 @@
 <!--                                <a href="" class="social"><i class="fab fa-linkedin-in"></i></a>-->
 <!--                            </div>-->
 <!--                            <span>或使用邮箱注册</span>-->
-                            <input type="text" name="username" placeholder="用户名" v-model="username">
-                            <input type="email" name="email" placeholder="电子邮箱" v-model="email">
-                            <input type="password" name="password" placeholder="密 码" v-model="password">
+                            <div class="d-flex align-content-center justify-content-center col-12">
+<!--                                <label class="control-label" for="register_username"><i class="bi bi-person-circle"></i></label>-->
+                                <input type="text" id="register_username" name="username" class="form-control" placeholder="用户名" v-model="username">
+                            </div>
+                            <input type="email" name="email" placeholder="电子邮箱" v-model="email" class="form-control">
+                            <input type="password" name="password" placeholder="密 码" v-model="password" class="form-control">
                             <br v-if="registerError==''">
                             <p v-else style="color: red">{{ registerError }}</p>
                             <p v-if="success" style="color: green">注册成功</p>
@@ -182,8 +185,8 @@
 <!--                                <a href="" class="social"><i class="fab fa-linkedin-in"></i></a>-->
 <!--                            </div>-->
 <!--                            <span>或使用您的帐号</span>-->
-                            <input type="text" name="username" placeholder="用户名" v-model="username">
-                            <input type="password" name="password" placeholder="密 码" v-model="password">
+                            <input type="text" name="username" placeholder="用户名" v-model="username" class="form-control">
+                            <input type="password" name="password" placeholder="密 码" v-model="password" class="form-control">
                             <a href="#" style="text-decoration:none">忘记密码？</a>
                             <br v-if="loginError==''">
                             <p v-else style="color: red">{{ loginError }}</p>
