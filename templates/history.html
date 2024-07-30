@@ -45,7 +45,7 @@
             }
         ]
     };
-    const DANGEROUS = 0.60
+    const DANGEROUS = 0.80
     const root = '/'
     const historyRoute = root + 'submissions/';
     const app = createApp({
@@ -87,6 +87,9 @@
             },
             methods: {
                 rateClassify: function (item) {
+                    if (item.marked_as_plagiarism) {
+                        return '人工标记为抄袭';
+                    }
                     let threshold = item.threshold === undefined ? DANGEROUS : item.threshold;
                     return item.similarity_ratio > threshold ? '疑似抄袭' : '正常';
                 },
@@ -104,11 +107,21 @@
                     const formattedDateTime = `${year}年${formattedMonth}月${formattedDay}日 ${formattedHours}:${formattedMinutes}`;
 
                     return formattedDateTime;
+                },
+                showColor (item) {
+                    if (item === '人工标记为抄袭') {
+                        return 'bg-danger';
+                    } else if (item === '疑似抄袭') {
+                        return 'bg-warning';
+                    } else {
+                        return 'bg-success';
+                    }
                 }
             }
-            ,
-            mounted() {
-                $(function () { $("[data-toggle='tooltip']").tooltip(); });
+            , mounted() {
+                $(function () {
+                    $("[data-toggle='tooltip']").tooltip();
+                });
                 console.log("Enable bootstrap tooltip.");
             },
             template: `
@@ -138,7 +151,7 @@
                                         <div class='fw-bold'><a :href="historyRoute+item.id.toString()" style="text-decoration: none">{{item.file1_name}} vs {{ item.file2_name }}</a></div>
                                         <small>提交时间: {{showDate(item.created_at)}}</small>
                                     </div>
-                                    <span :class='["badge",rateClassify(item)=="正常"?"bg-success":"bg-danger","rounded-pill"]'>{{rateClassify(item)}}</span>
+                                    <span :class='["badge",showColor(rateClassify(item)),"rounded-pill"]'>{{rateClassify(item)}}</span>
                                 </li>
 
                             </div>

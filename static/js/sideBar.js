@@ -33,7 +33,7 @@ export default {
            <div class="sidebar d-flex flex-column flex-shrink-0 p-3 bg-light"
                 style="width: 20vw; max-width: 280px; min-width: 200px; position: fixed; left: 0; top: 0; height: 100vh;">
                 <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-dark text-decoration-none">
-                     <img src="/static/pic/Duplication Check.jpg" alt="Duplication Check" class="fs-5" width="250px" height="140px">
+                     <img src="/static/pic/Duplication Check.jpg" alt="Duplication Check" class="fs-5" width="100%">
                 </a>
                 <hr>
                 <ul class="nav nav-pills flex-column mb-auto">
