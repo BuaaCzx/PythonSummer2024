@@ -30,3 +30,5 @@ media/
 /diff.txt
 /code_comparison/migrations/0002_codecomparisonhistory_diff_content.py
 !media/avatars/default.jpg
+/code_comparison/migrations/
+/CodeCheck/migrations/

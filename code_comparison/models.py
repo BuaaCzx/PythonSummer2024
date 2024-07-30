@@ -12,6 +12,7 @@ class CodeComparisonHistory(models.Model):
     similarity_ratio = models.FloatField()
     check_type = models.CharField(max_length=20, choices=(('normal', '普通查重'), ('ast', '抽象语法树查重')), default=('normal', '普通查重'))
     group_name = models.CharField(max_length=255, default='default group')  # 组名
+    marked_as_plagiarism = models.BooleanField(default=False)  # 人工标注抄袭
     diff_content = models.TextField(default='')  # 差异内容
     diff_content_html = models.TextField(default='')
     created_at = models.DateTimeField(auto_now_add=True)

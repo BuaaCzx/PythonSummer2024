@@ -1,5 +1,6 @@
 import difflib
 from datetime import datetime
+import pytz
 
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
@@ -57,7 +58,7 @@ class CodeComparisonView(View):
             diff_content_html = get_dif(std_content, file_content)
 
             # 存表
-            CodeComparisonHistory.objects.create(
+            record_id = CodeComparisonHistory.objects.create(
                 user=user,
                 file1=std_content,
                 file2=file_content,
@@ -69,14 +70,16 @@ class CodeComparisonView(View):
                 diff_content_html=diff_content_html,
                 check_type=check_option,
                 group_name=group_name,
-            )
+                marked_as_plagiarism=False,
+            ).id
+
             similarity_results.append({
+                'id': record_id,
                 'file_name': file.name,
                 'similarity_ratio': ratio,
-                'diff_content': diff_content
+                'diff_content': diff_content,
             })
 
-        # 按重复率从大到小排序
         similarity_results.sort(key=lambda x: x['similarity_ratio'], reverse=False)
 
         return JsonResponse({'results': similarity_results})
@@ -186,11 +189,12 @@ def code_comparison_history(request):
             'similarity_ratio': history.similarity_ratio,
             'created_at': history.created_at,
             'diff_content': history.diff_content,
-            'diff_content_html': history.diff_content_html
+            'diff_content_html': history.diff_content_html,
         })
     # 按时间从最近的到最远的顺序排序
     history_list.sort(key=lambda x: x['created_at'], reverse=True)
     return JsonResponse({'history': history_list})
+
 
 @login_required
 @require_http_methods(["GET"])
@@ -213,6 +217,7 @@ def code_comparison_history_new(request):
                     'diff_content': history.diff_content,
                     'diff_content_html': history.diff_content_html,
                     'check_type': history.check_type,
+                    'marked_as_plagiarism': history.marked_as_plagiarism,
                 })
                 fl = True
 
@@ -228,7 +233,9 @@ def code_comparison_history_new(request):
                     'similarity_ratio': history.similarity_ratio,
                     'created_at': history.created_at,
                     'diff_content': history.diff_content,
-                    'diff_content_html': history.diff_content_html
+                    'diff_content_html': history.diff_content_html,
+                    'check_type': history.check_type,
+                    'marked_as_plagiarism': history.marked_as_plagiarism,
                 }],
                 'created_at': history.created_at
             })
@@ -275,7 +282,7 @@ def submission_details(request, submission_id):
         "file2_name": submission.file2_name,
         "similarity_ratio_percent": similarity_ratio_percent,
         "diff_content": submission.diff_content_html,
-        "created_at": submission.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+        "created_at": submission.created_at.astimezone(pytz.timezone('Asia/Shanghai')).strftime('%Y-%m-%d %H:%M:%S'),
         "check_type": check_type,
     }
     return render(request, "submission_details.html", submission_dict)
@@ -295,3 +302,16 @@ def get_groups(request):
     groups.sort(reverse=True)
     # print(groups)
     return JsonResponse({'groups': groups})
+
+
+@login_required
+def mark_plagiarism(request):
+    submission_id = int(request.POST.get('id'))
+    plagiarism = request.POST.get('mark')
+    history = get_object_or_404(CodeComparisonHistory, id=submission_id)
+    if plagiarism == 'true':
+        history.marked_as_plagiarism = True
+    else:
+        history.marked_as_plagiarism = False
+    history.save()
+    return JsonResponse({'status': 'success'})

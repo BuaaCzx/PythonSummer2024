@@ -58,3 +58,4 @@
 | 7.28 21:06  | UUQ    | history: 增加无记录时的显示，避免页面突兀<br>menu (index) 初步写入布局 |
 | 7.28 22:30  | WDL    | 更美观的详细历史记录页面                                     |
 | 7.30 12:43  | LPR    | 增加run.py文件，pycharm环境一键运行，需要配置好环境          |
+| 7.30 13:27  | czx   | 在查询时返回的列表里，新增每一条记录的 'id'，新增接口：api/mark_plagiarism，POST一个'id'和一个'mark'（'true' or 'false'）；修了一下history的时区问题                                                                     |

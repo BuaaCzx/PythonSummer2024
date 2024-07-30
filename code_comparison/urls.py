@@ -26,4 +26,5 @@ urlpatterns = [
     path('api/history_new/', code_comparison_history_new, name='code_comparison_history_new'),
     path('api/get_groups/', views.get_groups, name='get_groups'),
     path('submissions/<int:submission_id>', views.submission_details, name='submission_details'),
+    path('api/mark_plagiarism', views.mark_plagiarism, name='mark_plagiarism'),
 ]
