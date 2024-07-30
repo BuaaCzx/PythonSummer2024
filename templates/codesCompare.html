@@ -155,12 +155,12 @@
         },
         methods: {
             getLineClass(line) {
-              if (line.startsWith("+")) {
-                return "added-line";
-              } else if (line.startsWith("-")) {
-                return "removed-line";
-              }
-              return "unchanged-line";
+                  if (line.startsWith("+")) {
+                    return "added-line";
+                  } else if (line.startsWith("-")) {
+                    return "removed-line";
+                  }
+                  return "unchanged-line";
             },
             handleSubmit() {
                 const chartContainer = document.getElementById('chart1');
@@ -237,7 +237,6 @@
                     if(this.isPostStd) {
                         this.isPostStd = false;     //如果想要改变std，但是不小心上传多了，就设置为无效
                         this.stdFileName = "";
-
                     }
                     this.showTooltip = true;
                     this.showText = "标准文件上传失败";
@@ -352,12 +351,20 @@
             markAsPlagiarized(fileIndex) {
                 if (!this.plagiarizedFiles.includes(fileIndex)) {
                     this.plagiarizedFiles.push(fileIndex);
+                    const formData = new FormData();
+                    formData.append('name', this.results_name[fileIndex - 1]);
+                    formData.append('type', 'isPlagiarized');
                 }
+
                 this.updateChart();
             },
             markAsNotPlagiarized(fileIndex) {
                 if (this.plagiarizedFiles.includes(fileIndex)) {
                     this.plagiarizedFiles = this.plagiarizedFiles.filter(index => index !== fileIndex);
+                    console.log(this.results_name[fileIndex - 1]);
+                    const formData = new FormData();
+                    formData.append('name', this.results_name[fileIndex - 1]);
+                    formData.append('type', 'notPlagiarized');
                 }
                 this.updateChart();
             },
@@ -435,7 +442,9 @@
                             }.bind(this),
                             textStyle: {
                                 fontSize: 22,
-                                color: 'black',
+                                color: function(params) {
+                                    return this.plagiarizedFiles.includes(params.dataIndex + 1) ? '✗' : '✓';
+                                }.bind(this),
                             }
                         },
                     }],
@@ -558,6 +567,7 @@
                         <div class="modal-content">
                             <div class="modal-header">
                                 <h5 class="modal-title">{% verbatim %} {{ results_name[selectedFileIndex - 1] }} {% endverbatim %}</h5>
+                                <h5 style="padding-left: 15px; font color="#FF0000"" class="modal-title">{% verbatim %}  Similarity: {{ results_similarity[selectedFileIndex - 1] * 100 }}% {% endverbatim %}</h5>
                                 <span v-if="plagiarizedFiles.includes(selectedFileIndex)" style="color: red; font-size: 0.8em;">（抄袭）</span>
                                 <span v-else style="color: green; font-size: 0.8em;">（非抄袭）</span>
                                 <button type="button" class="btn-close" @click="closeModal" aria-label="Close"></button>
