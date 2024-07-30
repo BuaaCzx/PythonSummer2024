@@ -55,12 +55,10 @@ export default {
                             <strong>{{ username }}</strong>
                         </a>
                         <ul class="dropdown-menu text-small shadow" aria-labelledby="dropdownUser2">
-                            <li><a class="dropdown-item" href="#">New project...</a></li>
-                            <li><a class="dropdown-item" href="#">Settings</a></li>
-                            <li><a class="dropdown-item" href="/users/profile/">个人资料</a></li>
-                            <li>
-                                <hr class="dropdown-divider">
-                            </li>
+<!--                            <li><a class="dropdown-item" href="/users/profile/">个人资料</a></li>-->
+<!--                            <li>-->
+<!--                                <hr class="dropdown-divider">-->
+<!--                            </li>-->
                             <li><a class="dropdown-item" @click="logout">退出登录</a></li>
                         </ul>
                     </div>
