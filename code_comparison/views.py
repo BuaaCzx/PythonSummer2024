@@ -308,6 +308,7 @@ def get_groups(request):
 def mark_plagiarism(request):
     submission_id = int(request.POST.get('id'))
     plagiarism = request.POST.get('mark')
+    print(submission_id, plagiarism)
     history = get_object_or_404(CodeComparisonHistory, id=submission_id)
     if plagiarism == 'true':
         history.marked_as_plagiarism = True
