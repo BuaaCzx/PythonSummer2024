@@ -277,6 +277,9 @@
                 }
             },
             resendFilesAndUpdateResults() {
+                if(this.isPostEls) {
+                    return;
+                }
                 if (this.elsUpLoadedFiles.length > 0) {
                     this.elsUpLoadedFiles.forEach(file => {
                         this.postFormData.append('files', file);
