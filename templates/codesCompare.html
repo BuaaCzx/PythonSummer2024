@@ -131,6 +131,7 @@
         },
         data() {
             return {
+                inputValue: '',
                 now: "代码重复检测",
                 uploadedFiles: [],
                 selectedFileIndex: null,
@@ -563,7 +564,7 @@
                                         type="text"
                                         v-model="inputValue"
                                         class="form-control"
-                                        :placeholder="请输入分类名"
+                                        :placeholder="'请输入分类名'"
                                         style="width: 150px;"
                                     />
                                     <button
