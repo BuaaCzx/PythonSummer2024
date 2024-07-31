@@ -204,6 +204,8 @@
                     });
                 } else {
                     this.showTooltip = true;
+                    console.log(this.isPostStd);
+                    console.log(this.isPostEls);
                     if(!this.isPostStd && !this.isPostEls) {
                         this.showText = "请先上传文件";
                     } else if (!this.isPostStd) {
@@ -247,6 +249,18 @@
                 }
             },
             handleFileChange(event) {
+                if(this.isPostEls) {
+                    console.log("clear");
+                    const newFormData = new FormData();
+                    this.postFormData.forEach((value, key) => {
+                        if (key !== 'files') {
+                            newFormData.append(key, value);
+                        }
+                    });
+                    this.postFormData = newFormData;
+                    this.elsUpLoadedFiles = [];
+                }
+                console.log("1");
                 const files = event.target.files;
                 if (files && files.length > 0) {
                     for (let i = 0; i < files.length; i++) {
