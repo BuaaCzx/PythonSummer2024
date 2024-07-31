@@ -250,6 +250,7 @@
                 }
             },
             handleFileChange(event) {
+
                 if(this.isPostEls) {
                     console.log("clear");
                     const newFormData = new FormData();
@@ -272,6 +273,7 @@
 
                     this.elsUpLoadedFiles = Array.from(files);
                     this.isPostEls = true;
+                    event.target.value = "";
                 }
             },
             resendFilesAndUpdateResults() {
