@@ -278,6 +278,7 @@
             },
             resendFilesAndUpdateResults() {
                 if(this.isPostEls) {
+                    this.postFormData.append('check_option', this.checkOption);
                     return;
                 }
                 if (this.elsUpLoadedFiles.length > 0) {
